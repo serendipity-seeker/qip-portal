@@ -182,9 +182,9 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
     SignClient.init({
       projectId: "2697d842a392d20a355416a260f58276",
       metadata: {
-        name: "QDApp Template",
-        description: "QDApp Template",
-        url: "https://www.qdapp-template.com",
+        name: "QIP Portal",
+        description: "QIP Portal",
+        url: "https://www.qip-portal.com",
         icons: ["https://walletconnect.com/walletconnect-logo.png"],
       },
     }).then((client) => {

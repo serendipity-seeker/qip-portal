@@ -7,7 +7,7 @@ import { useContext, useEffect } from "react";
 import { useAtom } from "jotai";
 import { settingsAtom } from "@/store/settings";
 import { MetaMaskContext } from "./components/composed/wallet-connect/MetamaskContext";
-import useRPCDataFetcher from "./hooks/useRPCDataFether";
+// import useRPCDataFetcher from "./hooks/useRPCDataFether";
 import CreateICO from "./pages/create-ico";
 import ICODetails from "./pages/details";
 
