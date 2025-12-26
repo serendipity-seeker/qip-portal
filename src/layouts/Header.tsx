@@ -13,7 +13,10 @@ const Header: React.FC = () => {
   const location = useLocation();
   const [settings, setSettings] = useAtom(settingsAtom);
 
-  const navigation = [{ name: "Home", href: "/" }];
+  const navigation = [
+    { name: "Home", href: "/" },
+    { name: "Create ICO", href: "/create" },
+  ];
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -37,8 +40,9 @@ const Header: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`px-1 text-sm font-medium transition-colors ${isActive(item.href) ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                  }`}
+                className={`px-1 text-sm font-medium transition-colors ${
+                  isActive(item.href) ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
                 style={{ borderRadius: 0, background: "none" }}
               >
                 {item.name}
@@ -54,7 +58,6 @@ const Header: React.FC = () => {
             {/* Wallet Button */}
             <ConnectLink darkMode={true} />
           </div>
-
 
           {/* Mobile menu button */}
           <button
@@ -74,10 +77,11 @@ const Header: React.FC = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block rounded-md px-3 py-2 text-base font-medium transition-colors ${isActive(item.href)
+                  className={`block rounded-md px-3 py-2 text-base font-medium transition-colors ${
+                    isActive(item.href)
                       ? "bg-accent text-accent-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
+                  }`}
                 >
                   {item.name}
                 </Link>

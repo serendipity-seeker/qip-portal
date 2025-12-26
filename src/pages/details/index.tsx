@@ -99,7 +99,7 @@ const ICODetailPage: React.FC = () => {
   const canBuy = status === "live" && currentPhase !== null;
 
   return (
-    <>
+    <main className="container mx-auto max-w-4xl px-4 py-12">
       <button
         onClick={() => navigate("/")}
         className="text-muted-foreground mb-6 text-sm transition-colors hover:text-[color:var(--primary-40)]"
@@ -240,7 +240,7 @@ const ICODetailPage: React.FC = () => {
       </div>
 
       <FundDistribution ico={ico} />
-    </>
+    </main>
   );
 };
 

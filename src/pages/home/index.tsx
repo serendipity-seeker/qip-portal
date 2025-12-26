@@ -62,7 +62,7 @@ const HomePage: React.FC = () => {
               <span>Secure, Transparent, On-Chain</span>
             </div>
 
-            <h1 className="text-foreground mb-6 text-6xl leading-tight font-bold text-balance lg:text-7xl">
+            <h1 className="text-foreground mb-6 text-6xl leading-tight font-bold text-balance lg:text-7xl uppercase">
               Transparent Token Sales on{" "}
               <span className="from-primary to-primary/60 bg-gradient-to-r bg-clip-text text-transparent">Qubic</span>
             </h1>
