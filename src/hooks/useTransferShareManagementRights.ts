@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import { useAtom } from "jotai";
 
-import { assetNameConvert } from "@/utils";
+import { assetNameConvert, QIP_SC_INDEX } from "@/utils";
 import { broadcastTx, fetchAssetsBalance } from "@/services/rpc.service";
 import { settingsAtom } from "@/store/settings";
 import { tickInfoAtom } from "@/store/tickInfo";
@@ -35,12 +35,14 @@ const useTransferShareManagementRights = () => {
     contractIndex,
     amount,
     fallback,
+    isFromQX = true,
   }: {
     assetName: string;
     assetIssuer: string;
     contractIndex: number;
     amount: number;
     fallback?: () => Promise<void>;
+    isFromQX?: boolean;
   }) => {
     if (!wallet) {
       toast.error("Please connect your wallet");
@@ -73,7 +75,7 @@ const useTransferShareManagementRights = () => {
       const taskId = `transfer-share-rights-${Date.now()}`;
       const checker = async () => {
         if (!wallet) return false;
-        return await checkTransferShareRights(assetName, contractIndex, targetContractOriginAmount + amount);
+        return await checkTransferShareRights(assetName, isFromQX ? contractIndex : QIP_SC_INDEX, targetContractOriginAmount + amount);
       };
 
       const onSuccess = async () => {
