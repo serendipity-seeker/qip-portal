@@ -12,7 +12,7 @@ interface ICOCardProps {
   currentRemaining: number;
 }
 
-export function ICOCard({ ico, currentEpoch, status, currentPhase, currentPrice, currentRemaining }: ICOCardProps) {
+export function ICOCard({ ico, status, currentPhase, currentPrice, currentRemaining }: ICOCardProps) {
   const getStatusBadge = () => {
     const badges = {
       upcoming: {
@@ -92,7 +92,7 @@ export function ICOCard({ ico, currentEpoch, status, currentPhase, currentPrice,
           <>
             <div className="border-border/50 flex items-center justify-between border-b py-3">
               <span className="text-muted-foreground text-sm font-medium">Current Phase</span>
-              <span className="text-foreground bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-bold">
+              <span className="bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-bold">
                 Phase {currentPhase}/3
               </span>
             </div>

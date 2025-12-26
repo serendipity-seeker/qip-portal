@@ -6,17 +6,32 @@ import { FundDistribution } from "@/components/fund-distribution";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
+import useBuyToken from "@/hooks/useBuyToken";
+import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
 
 const ICODetailPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { wallet, toggleConnectModal } = useQubicConnect();
   const [ico, setIco] = useState<ICOInfo | null>(null);
   const [currentEpoch, setCurrentEpoch] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
-  const [buying, setBuying] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const { buyToken, isLoading: buying } = useBuyToken({
+    onSuccess: async (result) => {
+      setSuccess(result.message);
+      setAmount("");
+      // Refresh ICO data
+      const updatedICO = await qipService.getICOInfo(ico!.index);
+      if (updatedICO) setIco(updatedICO);
+    },
+    onError: (error) => {
+      setError(error);
+    },
+  });
 
   useEffect(() => {
     const loadICO = async () => {
@@ -54,25 +69,12 @@ const ICODetailPage: React.FC = () => {
       return;
     }
 
-    setBuying(true);
-
-    try {
-      const result = await qipService.buyToken(ico.index, tokenAmount);
-
-      if (result.success) {
-        setSuccess(result.message);
-        setAmount("");
-        const updatedICO = await qipService.getICOInfo(ico.index);
-        if (updatedICO) setIco(updatedICO);
-      } else {
-        setError(result.message);
-      }
-    } catch (error) {
-      console.error("Buy token error:", error);
-      setError("Failed to purchase tokens. Please try again.");
-    } finally {
-      setBuying(false);
+    if (!wallet) {
+      toggleConnectModal();
+      return;
     }
+
+    await buyToken(ico.index, tokenAmount);
   };
 
   if (loading) {
@@ -165,6 +167,7 @@ const ICODetailPage: React.FC = () => {
                   className="w-full"
                   min="0"
                   step="1"
+                  disabled={buying}
                 />
                 <p className="text-muted-foreground mt-1 text-xs">
                   Maximum available: {new Intl.NumberFormat().format(currentRemaining)}
@@ -201,7 +204,7 @@ const ICODetailPage: React.FC = () => {
                 disabled={!amount || buying || Number.parseFloat(amount) <= 0}
                 className={cn("w-full", buying && "cursor-wait")}
               >
-                {buying ? "Processing..." : "Buy Tokens"}
+                {!wallet ? "Connect Wallet" : buying ? "Processing..." : "Buy Tokens"}
               </Button>
             </div>
           )}
@@ -233,6 +236,19 @@ const ICODetailPage: React.FC = () => {
                 {new Intl.NumberFormat().format(
                   ico.saleAmountForPhase1 + ico.saleAmountForPhase2 + ico.saleAmountForPhase3,
                 )}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-muted-foreground mb-2 text-xs">Progress</p>
+              <div className="bg-muted h-2 w-full rounded-full overflow-hidden">
+                <div
+                  className="bg-primary h-full transition-all duration-300"
+                  style={{ width: `${qipService.getProgress(ico)}%` }}
+                />
+              </div>
+              <p className="text-muted-foreground mt-1 text-xs text-right">
+                {qipService.getProgress(ico)}% sold
               </p>
             </div>
           </div>

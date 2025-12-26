@@ -5,14 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
 import { useNavigate } from "react-router-dom";
+import useCreateICO from "@/hooks/useCreateICO";
+import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
 
 export default function CreateICOPage() {
   const navigate = useNavigate();
+  const { wallet, toggleConnectModal } = useQubicConnect();
   const [currentEpoch, setCurrentEpoch] = useState<number>(0);
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const { createICO, isLoading: creating, step } = useCreateICO({
+    onSuccess: (result) => {
+      setSuccess(result.message);
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    },
+    onError: (error) => {
+      setError(error);
+    },
+  });
 
   const [formData, setFormData] = useState<CreateICOInput>({
     issuer: "",
@@ -53,7 +67,7 @@ export default function CreateICOPage() {
         setCurrentEpoch(epoch);
         setFormData((prev) => ({ ...prev, startEpoch: epoch + 3 }));
       } catch (error) {
-        console.error("[v0] Failed to load epoch:", error);
+        console.error("Failed to load epoch:", error);
       } finally {
         setLoading(false);
       }
@@ -81,6 +95,11 @@ export default function CreateICOPage() {
     setError("");
     setSuccess("");
 
+    if (!wallet) {
+      toggleConnectModal();
+      return;
+    }
+
     // Validation
     if (formData.startEpoch <= currentEpoch + 1) {
       setError("Start epoch must be at least 2 epochs in the future");
@@ -102,25 +121,23 @@ export default function CreateICOPage() {
       return;
     }
 
-    setCreating(true);
-
-    try {
-      const result = await qipService.createICO(formData);
-
-      if (result.success) {
-        setSuccess(result.message);
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
-      } else {
-        setError(result.message);
-      }
-    } catch (error) {
-      console.error("[v0] Create ICO error:", error);
-      setError("Failed to create ICO. Please try again.");
-    } finally {
-      setCreating(false);
+    if (!formData.assetName || formData.assetName.length === 0) {
+      setError("Asset name is required");
+      return;
     }
+
+    if (!formData.issuer || formData.issuer.length !== 60) {
+      setError("Valid issuer address is required (60 characters)");
+      return;
+    }
+
+    await createICO(formData);
+  };
+
+  const getStepMessage = () => {
+    if (step === "transferring") return "Transferring tokens to contract...";
+    if (step === "creating") return "Creating ICO...";
+    return "Create ICO";
   };
 
   if (loading) {
@@ -155,11 +172,16 @@ export default function CreateICOPage() {
               <label className="text-foreground mb-2 block text-sm font-medium">Asset Name</label>
               <Input
                 type="text"
-                placeholder="e.g., MYTOKEN"
+                placeholder="e.g., MYTOKEN (max 7 characters)"
                 value={formData.assetName}
-                onChange={(e) => setFormData({ ...formData, assetName: e.target.value.toUpperCase() })}
+                onChange={(e) => setFormData({ ...formData, assetName: e.target.value.toUpperCase().slice(0, 7) })}
                 required
+                disabled={creating}
+                maxLength={7}
               />
+              <p className="text-muted-foreground mt-1 text-xs">
+                The token name must match your existing asset on the blockchain.
+              </p>
             </div>
 
             <div>
@@ -170,8 +192,12 @@ export default function CreateICOPage() {
                 value={formData.issuer}
                 onChange={(e) => setFormData({ ...formData, issuer: e.target.value.toUpperCase() })}
                 required
+                disabled={creating}
                 className="font-mono text-xs"
               />
+              <p className="text-muted-foreground mt-1 text-xs">
+                The issuer of the token you want to sell. You must own these tokens.
+              </p>
             </div>
 
             <div>
@@ -183,6 +209,7 @@ export default function CreateICOPage() {
                 onChange={(e) => setFormData({ ...formData, startEpoch: Number.parseInt(e.target.value) })}
                 min={currentEpoch + 2}
                 required
+                disabled={creating}
               />
               <p className="text-muted-foreground mt-1 text-xs">
                 Current epoch: {currentEpoch}. Must be at least 2 epochs in the future.
@@ -194,11 +221,14 @@ export default function CreateICOPage() {
         {/* Phase Configuration */}
         <div className="bg-card border-card-border rounded-lg border p-6">
           <h3 className="text-foreground mb-4 text-lg font-semibold">Phase Configuration</h3>
+          <p className="text-muted-foreground mb-4 text-sm">
+            Each phase lasts 1 epoch. Configure pricing and token allocation for each phase.
+          </p>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Phase 1 */}
             <div className="space-y-4">
-              <h4 className="text-foreground font-semibold">Phase 1</h4>
+              <h4 className="text-foreground font-semibold">Phase 1 (Epoch {formData.startEpoch})</h4>
 
               <div>
                 <label className="text-foreground mb-2 block text-sm font-medium">Price (Energy)</label>
@@ -209,6 +239,7 @@ export default function CreateICOPage() {
                   onChange={(e) => setFormData({ ...formData, price1: Number.parseFloat(e.target.value) || 0 })}
                   min="1"
                   required
+                  disabled={creating}
                 />
               </div>
 
@@ -223,13 +254,14 @@ export default function CreateICOPage() {
                   }
                   min="1"
                   required
+                  disabled={creating}
                 />
               </div>
             </div>
 
             {/* Phase 2 */}
             <div className="space-y-4">
-              <h4 className="text-foreground font-semibold">Phase 2</h4>
+              <h4 className="text-foreground font-semibold">Phase 2 (Epoch {formData.startEpoch + 1})</h4>
 
               <div>
                 <label className="text-foreground mb-2 block text-sm font-medium">Price (Energy)</label>
@@ -240,6 +272,7 @@ export default function CreateICOPage() {
                   onChange={(e) => setFormData({ ...formData, price2: Number.parseFloat(e.target.value) || 0 })}
                   min="1"
                   required
+                  disabled={creating}
                 />
               </div>
 
@@ -254,13 +287,14 @@ export default function CreateICOPage() {
                   }
                   min="1"
                   required
+                  disabled={creating}
                 />
               </div>
             </div>
 
             {/* Phase 3 */}
             <div className="space-y-4">
-              <h4 className="text-foreground font-semibold">Phase 3</h4>
+              <h4 className="text-foreground font-semibold">Phase 3 (Epoch {formData.startEpoch + 2})</h4>
 
               <div>
                 <label className="text-foreground mb-2 block text-sm font-medium">Price (Energy)</label>
@@ -271,6 +305,7 @@ export default function CreateICOPage() {
                   onChange={(e) => setFormData({ ...formData, price3: Number.parseFloat(e.target.value) || 0 })}
                   min="1"
                   required
+                  disabled={creating}
                 />
               </div>
 
@@ -285,8 +320,21 @@ export default function CreateICOPage() {
                   }
                   min="1"
                   required
+                  disabled={creating}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Total tokens summary */}
+          <div className="bg-muted mt-4 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground text-sm">Total Tokens for Sale</span>
+              <span className="text-foreground text-lg font-bold">
+                {new Intl.NumberFormat().format(
+                  formData.saleAmountForPhase1 + formData.saleAmountForPhase2 + formData.saleAmountForPhase3,
+                )}
+              </span>
             </div>
           </div>
         </div>
@@ -317,6 +365,7 @@ export default function CreateICOPage() {
                       })
                     }
                     className="font-mono text-xs"
+                    disabled={creating}
                   />
                 </div>
 
@@ -334,6 +383,7 @@ export default function CreateICOPage() {
                     }
                     min="0"
                     max="95"
+                    disabled={creating}
                   />
                 </div>
               </div>
@@ -357,6 +407,10 @@ export default function CreateICOPage() {
               <span className="text-muted-foreground">Required</span>
               <span className="text-foreground font-medium">95%</span>
             </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Contract Shareholders</span>
+              <span className="text-foreground font-medium">5%</span>
+            </div>
             {!isPercentValid && (
               <p className="mt-2 text-xs text-[color:var(--error-40)]">Percentages must sum exactly to 95%</p>
             )}
@@ -378,7 +432,7 @@ export default function CreateICOPage() {
 
         {/* Submit Button */}
         <div className="flex gap-4">
-          <Button type="button" variant="outline" onClick={() => navigate("/")} className="flex-1">
+          <Button type="button" variant="outline" onClick={() => navigate("/")} className="flex-1" disabled={creating}>
             Cancel
           </Button>
           <Button
@@ -386,7 +440,7 @@ export default function CreateICOPage() {
             disabled={creating || !isPercentValid}
             className={cn("flex-1", creating && "cursor-wait")}
           >
-            {creating ? "Creating ICO..." : "Create ICO"}
+            {!wallet ? "Connect Wallet" : creating ? getStepMessage() : "Create ICO"}
           </Button>
         </div>
       </form>

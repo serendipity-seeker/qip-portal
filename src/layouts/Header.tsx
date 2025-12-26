@@ -31,7 +31,7 @@ const Header: React.FC = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="transition-opacity hover:opacity-80">
-            <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }} src={"/qubic.svg"} alt="logo" />
+            <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }} src={"/logo.svg"} alt="logo" />
           </Link>
 
           {/* Desktop Navigation */}
