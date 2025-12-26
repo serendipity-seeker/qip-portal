@@ -8,6 +8,8 @@ import { useAtom } from "jotai";
 import { settingsAtom } from "@/store/settings";
 import { MetaMaskContext } from "./components/composed/wallet-connect/MetamaskContext";
 import useRPCDataFetcher from "./hooks/useRPCDataFether";
+import CreateICO from "./pages/create-ico";
+import ICODetails from "./pages/details";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +20,14 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+        path: "/create",
+        element: <CreateICO />,
+      },
+      {
+        path: "/ico/:id",
+        element: <ICODetails />,
       },
     ],
   },
