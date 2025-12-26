@@ -35,7 +35,7 @@ const qevent = axios.create({
 
 export const fetchTickInfo = async (): Promise<TickInfo> => {
   try {
-    const tickResult = await rpc.get("/v1/tick-info?no-cache=" + Date.now());
+    const tickResult = await rpc.get("/v1/tick-info");
     const tick = await tickResult.data;
     if (!tick || !tick.tickInfo) {
       console.warn("getTickInfo: Invalid tick");
@@ -49,7 +49,7 @@ export const fetchTickInfo = async (): Promise<TickInfo> => {
 };
 
 export const fetchBalance = async (publicId: string): Promise<Balance> => {
-  const balanceResult = await rpc.get(`/v1/balances/${publicId}?no-cache=${Date.now()}`);
+  const balanceResult = await rpc.get(`/v1/balances/${publicId}`);
   const balance = await balanceResult.data;
   if (!balance || !balance.balance) {
     console.warn("getBalance: Invalid balance");
@@ -81,7 +81,7 @@ interface OwnedAssets {
 }
 
 export const fetchAssetsBalance = async (publicId: string, assetName: string, contractIdex = 1): Promise<number> => {
-  const assetsBalanceResult = await rpc.get(`/v1/assets/${publicId}/owned?no-cache=${Date.now()}`);
+  const assetsBalanceResult = await rpc.get(`/v1/assets/${publicId}/owned`);
   const assetsBalance = await assetsBalanceResult.data;
   if (!assetsBalance || !assetsBalance.ownedAssets) {
     console.warn("fetchAssetsBalance: Invalid assets balance");
@@ -108,7 +108,7 @@ interface AssetsOwnership {
 
 // all assets ownership contract address, assets name, and amount
 export const fetchAssetsOwnership = async (publicId: string): Promise<AssetsOwnership[]> => {
-  const assetsBalanceResult = await rpc.get(`/v1/assets/${publicId}/owned?no-cache=${Date.now()}`);
+  const assetsBalanceResult = await rpc.get(`/v1/assets/${publicId}/owned`);
   const assetsBalance = await assetsBalanceResult.data;
   if (!assetsBalance || !assetsBalance.ownedAssets) {
     console.warn("fetchAssetsBalance: Invalid assets balance");
@@ -133,12 +133,12 @@ export const broadcastTx = async (tx: Uint8Array) => {
 };
 
 export const fetchQuerySC = async (query: IQuerySC): Promise<IQuerySCResponse> => {
-  const queryResult = await rpc.post(`${RPC_URL}/v1/querySmartContract?no-cache=${Date.now()}`, query);
+  const queryResult = await rpc.post(`${RPC_URL}/v1/querySmartContract`, query);
   return queryResult.data;
 };
 
 export const fetchTxStatus = async (txId: string): Promise<TxStatus> => {
-  const txStatusResult = await rpc.get(`${RPC_URL}/v1/tx-status/${txId}?no-cache=${Date.now()}`);
+  const txStatusResult = await rpc.get(`${RPC_URL}/v1/tx-status/${txId}`);
   let txStatus = {} as { transactionStatus: TxStatus };
   if (txStatusResult.status == 200) {
     txStatus = await txStatusResult.data;
@@ -147,7 +147,7 @@ export const fetchTxStatus = async (txId: string): Promise<TxStatus> => {
 };
 
 export const fetchLatestStats = async (): Promise<LatestStats> => {
-  const latestStatsResult = await rpc.get(`${RPC_URL}/v1/latest-stats?no-cache=${Date.now()}`);
+  const latestStatsResult = await rpc.get(`${RPC_URL}/v1/latest-stats`);
   if (latestStatsResult.status !== 200) {
     console.warn("fetchLatestStats: Failed to fetch latest stats");
     return {} as LatestStats;
@@ -162,7 +162,7 @@ export const fetchLatestStats = async (): Promise<LatestStats> => {
 
 export const fetchArchiverStatus = async (): Promise<ArchiverStatus> => {
   try {
-    const archiverStatusResult = await rpc.get(`${RPC_URL}/v1/status?no-cache=${Date.now()}`);
+    const archiverStatusResult = await rpc.get(`${RPC_URL}/v1/status`);
     if (archiverStatusResult.status !== 200) {
       console.warn("fetchArchiverStatus: Failed to fetch archiver status");
       return {} as ArchiverStatus;
@@ -176,7 +176,7 @@ export const fetchArchiverStatus = async (): Promise<ArchiverStatus> => {
 
 export const fetchRichList = async (page: number, pageSize: number): Promise<RichList> => {
   const richListResult = await rpc.get(
-    `${RPC_URL}/v1/rich-list?page=${page}&pageSize=${pageSize}&no-cache=${Date.now()}`,
+    `${RPC_URL}/v1/rich-list?page=${page}&pageSize=${pageSize}`,
   );
   const richList = await richListResult.data;
   return richList;
@@ -184,7 +184,7 @@ export const fetchRichList = async (page: number, pageSize: number): Promise<Ric
 
 export const fetchTxHistory = async (publicId: string, startTick: number, endTick: number): Promise<TxHistory> => {
   const txHistoryResult = await rpc.get(
-    `${RPC_URL}/v2/identities/${publicId}/transfers?startTick=${startTick}&endTick=${endTick}&no-cache=${Date.now()}`,
+    `${RPC_URL}/v2/identities/${publicId}/transfers?startTick=${startTick}&endTick=${endTick}`,
   );
   const txHistory = await txHistoryResult.data;
   return txHistory.data;
@@ -192,25 +192,25 @@ export const fetchTxHistory = async (publicId: string, startTick: number, endTic
 
 export const fetchEpochTicks = async (epoch: number, page: number, pageSize: number): Promise<EpochTicks> => {
   const epochTicksResult = await rpc.get(
-    `${RPC_URL}/v2/epochs/${epoch}/ticks?page=${page}&pageSize=${pageSize}&no-cache=${Date.now()}`,
+    `${RPC_URL}/v2/epochs/${epoch}/ticks?page=${page}&pageSize=${pageSize}`,
   );
   const epochTicks = await epochTicksResult.data;
   return epochTicks.data;
 };
 
 export const fetchApprovedTx = async (tick: number): Promise<TransactionInfo[]> => {
-  const approvedTxResult = await rpc.get(`${RPC_URL}/v1/ticks/${tick}/approved-transactions?no-cache=${Date.now()}`);
+  const approvedTxResult = await rpc.get(`${RPC_URL}/v1/ticks/${tick}/approved-transactions`);
   const approvedTx = await approvedTxResult.data;
   return approvedTx.approvedTransactions;
 };
 
 export const fetchTransactionInfo = async (txHash: string): Promise<TransactionInfo> => {
-  const transactionInfoResult = await rpc.get(`${RPC_URL}/v2/transactions/${txHash}?no-cache=${Date.now()}`);
+  const transactionInfoResult = await rpc.get(`${RPC_URL}/v2/transactions/${txHash}`);
   const transactionInfo = await transactionInfoResult.data;
   return transactionInfo.transaction;
 };
 
 export const fetchTickEvents = async (tick: number): Promise<TickEvents> => {
-  const tickEventsResult = await qevent.post(`/v1/events/getTickEvents?no-cache=${Date.now()}`, { tick });
+  const tickEventsResult = await qevent.post(`/v1/events/getTickEvents`, { tick });
   return tickEventsResult.data;
 };
