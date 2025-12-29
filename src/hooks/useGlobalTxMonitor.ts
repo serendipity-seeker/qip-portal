@@ -219,7 +219,6 @@ const useGlobalTxMonitor = () => {
   }, [isMonitoring, monitoringTasks, latestTick, monitorStrategy, stopMonitoring, resultHandlers]);
 
   useEffect(() => {
-    console.log({isMonitoring})
     if (!isMonitoring) return;
     const toastId = toast.loading("Monitoring transaction...", {
       position: "bottom-right",

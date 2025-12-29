@@ -1,6 +1,5 @@
 import { atom, useAtom } from "jotai";
-import { useMemo } from "react";
-import { useCallback } from "react";
+import { useMemo, useCallback } from "react";
 
 // Define a type for the monitoring task
 type MonitoringTask = {
@@ -25,7 +24,7 @@ export const useTxMonitor = () => {
 
   // Memoize functions to prevent unnecessary rerenders
   const startMonitoring = useCallback(
-    (taskId: string, task: MonitoringTask, monitorStrategy: "v1" | "v2" | "v3" = "v1") => {
+    (taskId: string, task: MonitoringTask, monitorStrategy: "v1" | "v2" | "v3" = "v3") => {
       setMonitoringTasks((prev) => ({ ...prev, [taskId]: task }));
       setIsMonitoring(true);
       setResult(undefined);
