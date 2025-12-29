@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
 import useBuyToken from "@/hooks/useBuyToken";
 import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
+import { toast } from "sonner";
 
 const ICODetailPage: React.FC = () => {
   const { id } = useParams();
@@ -17,19 +18,17 @@ const ICODetailPage: React.FC = () => {
   const [currentEpoch, setCurrentEpoch] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const { buyToken, isLoading: buying } = useBuyToken({
     onSuccess: async (result) => {
-      setSuccess(result.message);
+      toast.success(result.message);
       setAmount("");
       // Refresh ICO data
       const updatedICO = await qipService.getICOInfo(ico!.index);
       if (updatedICO) setIco(updatedICO);
     },
     onError: (error) => {
-      setError(error);
+      toast.error(error);
     },
   });
 
@@ -60,12 +59,9 @@ const ICODetailPage: React.FC = () => {
   const handleBuy = async () => {
     if (!ico) return;
 
-    setError("");
-    setSuccess("");
-
     const tokenAmount = Number.parseFloat(amount);
     if (isNaN(tokenAmount) || tokenAmount <= 0) {
-      setError("Please enter a valid amount");
+      toast.error("Please enter a valid amount");
       return;
     }
 
@@ -159,11 +155,7 @@ const ICODetailPage: React.FC = () => {
                   type="number"
                   placeholder="Enter amount"
                   value={amount}
-                  onChange={(e) => {
-                    setAmount(e.target.value);
-                    setError("");
-                    setSuccess("");
-                  }}
+                  onChange={(e) => setAmount(e.target.value)}
                   className="w-full"
                   min="0"
                   step="1"
@@ -186,18 +178,6 @@ const ICODetailPage: React.FC = () => {
                   </span>
                 </div>
               </div>
-
-              {error && (
-                <div className="bg-opacity-10 rounded-lg border border-[color:var(--error-40)] bg-[color:var(--error-40)] p-3">
-                  <p className="text-sm text-[color:var(--error-40)]">{error}</p>
-                </div>
-              )}
-
-              {success && (
-                <div className="bg-opacity-10 rounded-lg border border-[color:var(--success-40)] bg-[color:var(--success-40)] p-3">
-                  <p className="text-sm text-[color:var(--success-40)]">{success}</p>
-                </div>
-              )}
 
               <Button
                 onClick={handleBuy}

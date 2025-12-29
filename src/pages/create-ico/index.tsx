@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import useCreateICO from "@/hooks/useCreateICO";
 import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
 import { fetchAssetsOwnership } from "@/services/rpc.service";
+import { toast } from "sonner";
 
 interface OwnedAsset {
   assetName: string;
@@ -31,21 +32,19 @@ export default function CreateICOPage() {
   const { wallet, toggleConnectModal } = useQubicConnect();
   const [currentEpoch, setCurrentEpoch] = useState<number>(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [ownedAssets, setOwnedAssets] = useState<OwnedAsset[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(false);
   const [selectedAssetKey, setSelectedAssetKey] = useState<string>("");
 
   const { createICO, isLoading: creating, step } = useCreateICO({
     onSuccess: (result) => {
-      setSuccess(result.message);
+      toast.success(result.message);
       setTimeout(() => {
         navigate("/");
       }, 2000);
     },
     onError: (error) => {
-      setError(error);
+      toast.error(error);
     },
   });
 
@@ -152,8 +151,6 @@ export default function CreateICOPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
 
     if (!wallet) {
       toggleConnectModal();
@@ -162,27 +159,27 @@ export default function CreateICOPage() {
 
     // Validation
     if (formData.startEpoch <= currentEpoch + 1) {
-      setError("Start epoch must be at least 2 epochs in the future");
+      toast.error("Start epoch must be at least 2 epochs in the future");
       return;
     }
 
     if (formData.price1 <= 0 || formData.price2 <= 0 || formData.price3 <= 0) {
-      setError("All prices must be greater than zero");
+      toast.error("All prices must be greater than zero");
       return;
     }
 
     if (formData.saleAmountForPhase1 <= 0 || formData.saleAmountForPhase2 <= 0 || formData.saleAmountForPhase3 <= 0) {
-      setError("All sale amounts must be greater than zero");
+      toast.error("All sale amounts must be greater than zero");
       return;
     }
 
     if (!isPercentValid) {
-      setError(`Percentages must sum to 95 (current: ${totalPercent})`);
+      toast.error(`Percentages must sum to 95 (current: ${totalPercent})`);
       return;
     }
 
     if (!selectedAssetKey || !formData.assetName || !formData.issuer) {
-      setError("Please select an asset to sell");
+      toast.error("Please select an asset to sell");
       return;
     }
 
@@ -479,7 +476,7 @@ export default function CreateICOPage() {
               <span
                 className={cn(
                   "text-lg font-bold",
-                  isPercentValid ? "text-[color:var(--success-40)]" : "text-[color:var(--error-40)]",
+                  isPercentValid ? "text-success-40" : "text-error-40",
                 )}
               >
                 {totalPercent}%
@@ -494,23 +491,10 @@ export default function CreateICOPage() {
               <span className="text-foreground font-medium">5%</span>
             </div>
             {!isPercentValid && (
-              <p className="mt-2 text-xs text-[color:var(--error-40)]">Percentages must sum exactly to 95%</p>
+              <p className="mt-2 text-xs text-error-40">Percentages must sum exactly to 95%</p>
             )}
           </div>
         </div>
-
-        {/* Error/Success Messages */}
-        {error && (
-          <div className="bg-opacity-10 rounded-lg border border-[color:var(--error-40)] bg-[color:var(--error-40)] p-4">
-            <p className="text-sm text-[color:var(--error-40)]">{error}</p>
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-opacity-10 rounded-lg border border-[color:var(--success-40)] bg-[color:var(--success-40)] p-4">
-            <p className="text-sm text-[color:var(--success-40)]">{success}</p>
-          </div>
-        )}
 
         {/* Submit Button */}
         <div className="flex gap-4">
