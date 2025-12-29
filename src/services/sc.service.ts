@@ -18,6 +18,9 @@ const getResponseValues = (res: any) => {
   if (!res.responseData) return null;
   const responseView = new DataView(base64ToUint8Array(res.responseData).buffer);
   const responseArray = base64ToUint8Array(res.responseData);
+ 
+  // Check response Array data is all 0, if true, return null
+  if (responseArray.every((byte) => byte === 0)) return null;
 
   return {
     getUint64: (offset: number) => Number(responseView.getBigUint64(offset, true)),
