@@ -3,15 +3,15 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
 import ConnectLink from "@/components/composed/wallet-connect/ConnectLink";
-import { useAtom } from "jotai";
-import { settingsAtom } from "@/store/settings";
-import { MdDarkMode, MdLightMode } from "react-icons/md";
-import { Button } from "@/components/ui/button";
+// import { useAtom } from "jotai";
+// import { settingsAtom } from "@/store/settings";
+// import { MdDarkMode, MdLightMode } from "react-icons/md";
+// import { Button } from "@/components/ui/button";
 
 const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const [settings, setSettings] = useAtom(settingsAtom);
+  // const [settings, setSettings] = useAtom(settingsAtom);
 
   const navigation = [
     { name: "Home", href: "/" },
@@ -20,10 +20,10 @@ const Header: React.FC = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const toggleTheme = () => {
-    setSettings({ darkMode: !settings.darkMode });
-    document.documentElement.classList.toggle("dark");
-  };
+  // const toggleTheme = () => {
+  //   setSettings({ darkMode: !settings.darkMode });
+  //   document.documentElement.classList.toggle("dark");
+  // };
 
   return (
     <header className="bg-background border-border sticky top-0 z-50 border-b">
@@ -51,9 +51,9 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Button onClick={toggleTheme}>
+            {/* <Button onClick={toggleTheme}>
               {!settings.darkMode ? <MdDarkMode size={24} /> : <MdLightMode size={24} />}
-            </Button>
+            </Button> */}
 
             {/* Wallet Button */}
             <ConnectLink darkMode={true} />
