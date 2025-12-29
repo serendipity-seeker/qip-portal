@@ -1,26 +1,68 @@
 import { toast } from "sonner";
 import { useAtom } from "jotai";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-import { monitoringTasksAtom, monitorStrategyAtom, useTxMonitor } from "@/store/txMonitor";
-import { tickInfoAtom } from "@/store/tickInfo";
-import { statusAtom } from "@/store/status";
-import { fetchApprovedTx } from "@/services/rpc.service";
-import { fetchTickEvents } from "@/services/rpc.service";
-import { decodeQbayLog } from "@/services/log.service";
+import { monitoringTasksAtom, monitorStrategyAtom, useTxMonitor, resultAtom } from "@/store/txMonitor";
+import { latestTickAtom } from "@/store/rpc";
+import { fetchLatestTick, fetchTickEvents, fetchTickTxs } from "@/services/rpc.service";
+import { decodeQIPLog } from "@/services/log.service";
 import type { TickEvents } from "@/types";
 
+function useResultHandlers(setResult: (val: boolean) => void) {
+  return {
+    onSuccess: async () => {
+      setResult(true);
+    },
+    onFailure: async () => {
+      setResult(false);
+    },
+  };
+}
+
 const useGlobalTxMonitor = () => {
-  const [tickInfo] = useAtom(tickInfoAtom);
   const [monitoringTasks] = useAtom(monitoringTasksAtom);
   const [monitorStrategy] = useAtom(monitorStrategyAtom);
   const { isMonitoring, stopMonitoring } = useTxMonitor();
-  const [status] = useAtom(statusAtom);
+  const [, setResult] = useAtom(resultAtom);
+  const [latestTick, setLatestTick] = useAtom(latestTickAtom);
+
+  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resultHandlers = useResultHandlers(setResult);
+
+  useEffect(() => {
+    // If monitoring starts, set up the interval
+    if (isMonitoring) {
+      fetchLatestTick().then((tick) => {
+        setLatestTick(tick);
+      });
+
+      intervalIdRef.current = setInterval(() => {
+        fetchLatestTick().then((tick) => {
+          setLatestTick(tick);
+        });
+      }, 5000);
+    } else {
+      // If monitoring stops, clear the interval
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current);
+        intervalIdRef.current = null;
+      }
+    }
+
+    // Cleanup on unmount or when isMonitoring changes
+    return () => {
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current);
+        intervalIdRef.current = null;
+      }
+    };
+  }, [isMonitoring, setLatestTick]);
 
   /**
    * v1 is original version, and it is too difficult to implement all checker functions
    * v2, v3 is much easier than v1, and good result
-   * but TransferShareRight is not procedue of Qbay contract, so it is not available by v3
+   * but TransferShareRight is not procedue of QRaffle contract, so it is not available by v3
    * so we remain v1, v2 for this procedure
    */
 
@@ -31,23 +73,32 @@ const useGlobalTxMonitor = () => {
    */
   useEffect(() => {
     if (!isMonitoring) return;
-    const currentTick = tickInfo?.tick;
 
     if (monitorStrategy === "v1") {
       Object.entries(monitoringTasks).forEach(async ([taskId, task]) => {
-        const { checker, onSuccess, onFailure } = task;
+        // wrap/override with resultHandlers
+        const onSuccess = async () => {
+          await task.onSuccess?.();
+          await resultHandlers.onSuccess();
+        };
+        const onFailure = async () => {
+          await task.onFailure?.();
+          await resultHandlers.onFailure();
+        };
 
-        if (!currentTick) return;
+        const { checker } = task;
+
+        if (!latestTick) return;
 
         const TIMEOUT_TICKS = 10;
-        if (currentTick > task.targetTick + TIMEOUT_TICKS) {
+        if (latestTick > task.targetTick + TIMEOUT_TICKS) {
           stopMonitoring(taskId);
           await onFailure();
           return;
         }
 
-        console.log("progress", currentTick, task.targetTick);
-        if (currentTick > task.targetTick) {
+        console.log("progress", latestTick, task.targetTick);
+        if (latestTick > task.targetTick) {
           checker().then(async (success) => {
             if (success) {
               stopMonitoring(taskId);
@@ -59,7 +110,7 @@ const useGlobalTxMonitor = () => {
         }
       });
     }
-  }, [tickInfo, isMonitoring, monitoringTasks, monitorStrategy, stopMonitoring]);
+  }, [latestTick, isMonitoring, monitoringTasks, monitorStrategy, stopMonitoring, resultHandlers]);
 
   /**
    * v2: using archiver approved-transaction endpoint
@@ -71,13 +122,21 @@ const useGlobalTxMonitor = () => {
 
     if (monitorStrategy === "v2") {
       Object.entries(monitoringTasks).forEach(([taskId, task]) => {
-        const { onSuccess, onFailure } = task;
+        // wrap/override with resultHandlers
+        const onSuccess = async () => {
+          await task.onSuccess?.();
+          await resultHandlers.onSuccess();
+        };
+        const onFailure = async () => {
+          await task.onFailure?.();
+          await resultHandlers.onFailure();
+        };
 
-        if (!status || !task.txHash) return;
+        if (!latestTick || !task.txHash) return;
 
-        console.log("progress", status.lastProcessedTick.tickNumber, task.targetTick);
-        if (status.lastProcessedTick.tickNumber > task.targetTick) {
-          fetchApprovedTx(task.targetTick).then(async (txs) => {
+        console.log("progress", latestTick, task.targetTick);
+        if (latestTick > task.targetTick) {
+          fetchTickTxs(task.targetTick).then(async (txs) => {
             stopMonitoring(taskId);
             if (txs.length > 0) {
               const tx = txs.find((tx) => tx.transaction.txId === task.txHash);
@@ -93,7 +152,7 @@ const useGlobalTxMonitor = () => {
         }
       });
     }
-  }, [isMonitoring, monitoringTasks, status, monitorStrategy, stopMonitoring]);
+  }, [isMonitoring, monitoringTasks, latestTick, monitorStrategy, stopMonitoring, resultHandlers]);
 
   /**
    * v3: using log - best choice
@@ -104,12 +163,22 @@ const useGlobalTxMonitor = () => {
     if (!isMonitoring) return;
     if (monitorStrategy === "v3") {
       Object.entries(monitoringTasks).forEach(async ([taskId, task]) => {
-        const { onSuccess, onFailure } = task;
+        // wrap/override with resultHandlers
+        const onSuccess = async () => {
+          await task.onSuccess?.();
+          await resultHandlers.onSuccess();
+        };
+        const onFailure = async () => {
+          await task.onFailure?.();
+          await resultHandlers.onFailure();
+        };
 
-        if (!status) return;
+        // "status" is not well defined, assuming it should be something like latestTick (as in others)
+        // We'll check latestTick as per the usage in v2/v1
+        if (!latestTick) return;
 
-        console.log("progress", status.lastProcessedTick.tickNumber, task.targetTick);
-        if (status.lastProcessedTick.tickNumber > task.targetTick) {
+        console.log("progress", latestTick, task.targetTick);
+        if (latestTick > task.targetTick + 2) {
           let tickEvents: TickEvents | null = null;
           let attempts = 0;
           const maxAttempts = 10;
@@ -119,30 +188,25 @@ const useGlobalTxMonitor = () => {
             attempts++;
           }
           if (!tickEvents) {
-            onFailure();
+            console.log("no tick events");
+            await onFailure();
             stopMonitoring(taskId);
             return;
           }
-          const logs = await decodeQbayLog(tickEvents);
+          const logs = await decodeQIPLog(tickEvents);
+          const lastLogType = logs[logs.length - 1]?.logType;
+
           stopMonitoring(taskId);
-          // This is special case because of SC issue
-          if (taskId.includes("reject-exchange")) {
-            if (logs[logs.length - 1]?.logType === "NOT_POSSESSOR") {
-              await onSuccess();
-            } else {
-              await onFailure();
-              if (logs.length > 0) toast.error(logs[logs.length - 1]?.logType);
-            }
-          } else if (logs[logs.length - 1]?.logType === "SUCCESS") {
+          if (lastLogType === "SUCCESS") {
             await onSuccess();
           } else {
+            if (logs.length > 0) toast.error(lastLogType);
             await onFailure();
-            if (logs.length > 0) toast.error(logs[logs.length - 1]?.logType);
           }
         }
       });
     }
-  }, [isMonitoring, monitoringTasks, status, monitorStrategy, stopMonitoring]);
+  }, [isMonitoring, monitoringTasks, latestTick, monitorStrategy, stopMonitoring, resultHandlers]);
 
   useEffect(() => {
     if (!isMonitoring) return;
@@ -150,9 +214,7 @@ const useGlobalTxMonitor = () => {
       position: "bottom-right",
     });
     return () => {
-      if (toastId) {
-        toast.dismiss(toastId);
-      }
+      toast.dismiss(toastId as string);
     };
   }, [isMonitoring]);
 

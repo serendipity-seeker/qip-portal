@@ -146,6 +146,11 @@ export const fetchTxStatus = async (txId: string): Promise<TxStatus> => {
   return txStatus.transactionStatus;
 };
 
+export const fetchLatestTick = async (): Promise<number> => {
+  const latestTickResult = await rpc.get(`${RPC_URL}/v1/latestTick`);
+  return latestTickResult.data.latestTick;
+};
+
 export const fetchLatestStats = async (): Promise<LatestStats> => {
   const latestStatsResult = await rpc.get(`${RPC_URL}/v1/latest-stats`);
   if (latestStatsResult.status !== 200) {
@@ -213,4 +218,10 @@ export const fetchTransactionInfo = async (txHash: string): Promise<TransactionI
 export const fetchTickEvents = async (tick: number): Promise<TickEvents> => {
   const tickEventsResult = await qevent.post(`/v1/events/getTickEvents`, { tick });
   return tickEventsResult.data;
+};
+
+export const fetchTickTxs = async (tick: number): Promise<TransactionInfo[]> => {
+  const transferTxResult = await rpc.get(`${RPC_URL}/v2/ticks/${tick}/transactions`);
+  const transferTx = await transferTxResult.data;
+  return transferTx.transactions;
 };

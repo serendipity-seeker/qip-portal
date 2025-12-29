@@ -2,11 +2,10 @@ import { toast } from "sonner";
 import { useAtom } from "jotai";
 import { useState, useCallback } from "react";
 
-import { broadcastTx, fetchTickEvents, fetchAssetsBalance } from "@/services/rpc.service";
+import { broadcastTx, fetchTickEvents, fetchAssetsBalance, fetchTickInfo } from "@/services/rpc.service";
 import { createICOTx, transferShareManagementRights } from "@/services/sc.service";
 import { isQIPTxSuccessful } from "@/services/log.service";
 import { settingsAtom } from "@/store/settings";
-import { tickInfoAtom } from "@/store/tickInfo";
 import { useTxMonitor } from "@/store/txMonitor";
 import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
 import { qipService } from "@/utils/qip-service";
@@ -20,7 +19,6 @@ interface UseCreateICOOptions {
 }
 
 const useCreateICO = (options?: UseCreateICOOptions) => {
-  const [tickInfo] = useAtom(tickInfoAtom);
   const [settings] = useAtom(settingsAtom);
   const { wallet, getSignedTx } = useQubicConnect();
   const { startMonitoring } = useTxMonitor();
@@ -56,6 +54,7 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
       }
 
       const tokensToTransfer = totalTokens - currentBalance;
+      const tickInfo = await fetchTickInfo();
       const targetTick = tickInfo.tick + settings.tickOffset;
 
       try {
@@ -104,7 +103,7 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
         return { success: false, message };
       }
     },
-    [wallet, tickInfo, settings, getSignedTx, startMonitoring],
+    [wallet, settings, getSignedTx, startMonitoring],
   );
 
   /**
@@ -149,6 +148,7 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
 
         // Step 2: Create ICO
         setStep("creating");
+        const tickInfo = await fetchTickInfo();
         const targetTick = tickInfo.tick + settings.tickOffset;
 
         const tx = await createICOTx(
@@ -263,7 +263,6 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
     },
     [
       wallet,
-      tickInfo,
       settings,
       getSignedTx,
       startMonitoring,
