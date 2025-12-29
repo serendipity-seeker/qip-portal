@@ -96,7 +96,7 @@ export function PhaseTimeline({
                 >
                   <div className="mb-2 text-center">
                     <p className="text-muted-foreground mb-1 text-xs">Epoch {phase.epoch}</p>
-                    <p className="text-lg font-bold text-[color:var(--primary-40)]">{phase.price} Energy</p>
+                    <p className="text-lg font-bold text-[color:var(--primary-40)]">{phase.price} QUBIC</p>
                   </div>
 
                   <div className="space-y-1 text-xs">

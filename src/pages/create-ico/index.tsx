@@ -231,7 +231,7 @@ export default function CreateICOPage() {
               <h4 className="text-foreground font-semibold">Phase 1 (Epoch {formData.startEpoch})</h4>
 
               <div>
-                <label className="text-foreground mb-2 block text-sm font-medium">Price (Energy)</label>
+                <label className="text-foreground mb-2 block text-sm font-medium">Price (QUBIC)</label>
                 <Input
                   type="number"
                   placeholder="100"
@@ -264,7 +264,7 @@ export default function CreateICOPage() {
               <h4 className="text-foreground font-semibold">Phase 2 (Epoch {formData.startEpoch + 1})</h4>
 
               <div>
-                <label className="text-foreground mb-2 block text-sm font-medium">Price (Energy)</label>
+                <label className="text-foreground mb-2 block text-sm font-medium">Price (QUBIC)</label>
                 <Input
                   type="number"
                   placeholder="150"
@@ -297,7 +297,7 @@ export default function CreateICOPage() {
               <h4 className="text-foreground font-semibold">Phase 3 (Epoch {formData.startEpoch + 2})</h4>
 
               <div>
-                <label className="text-foreground mb-2 block text-sm font-medium">Price (Energy)</label>
+                <label className="text-foreground mb-2 block text-sm font-medium">Price (QUBIC)</label>
                 <Input
                   type="number"
                   placeholder="200"

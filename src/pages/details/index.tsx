@@ -177,12 +177,12 @@ const ICODetailPage: React.FC = () => {
               <div className="bg-muted rounded-lg p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Price per Token</span>
-                  <span className="text-foreground text-sm font-semibold">{currentPrice} Energy</span>
+                  <span className="text-foreground text-sm font-semibold">{currentPrice} QUBIC</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-foreground text-sm font-semibold">Total Cost</span>
                   <span className="text-lg font-bold text-[color:var(--primary-40)]">
-                    {new Intl.NumberFormat().format(totalCost)} Energy
+                    {new Intl.NumberFormat().format(totalCost)} QUBIC
                   </span>
                 </div>
               </div>

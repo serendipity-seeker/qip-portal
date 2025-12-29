@@ -78,7 +78,7 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
           const successResult: BuyTokenResult = {
             success: true,
             returnCode: QIPLogInfo.QIP_success,
-            message: `Successfully purchased ${amount} tokens for ${totalCost} energy`,
+            message: `Successfully purchased ${amount} tokens for ${totalCost} QUBIC`,
             txId,
           };
           toast.success(successResult.message);

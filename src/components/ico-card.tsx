@@ -99,7 +99,7 @@ export function ICOCard({ ico, status, currentPhase, currentPrice, currentRemain
             <div className="border-border/50 flex items-center justify-between border-b py-3">
               <span className="text-muted-foreground text-sm font-medium">Price per Token</span>
               <span className="from-primary to-primary/70 bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent">
-                {currentPrice} Energy
+                {currentPrice} QUBIC
               </span>
             </div>
             <div className="flex items-center justify-between py-3">

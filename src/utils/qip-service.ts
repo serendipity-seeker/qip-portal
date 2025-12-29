@@ -238,7 +238,7 @@ export const qipService = {
     return {
       success: true,
       returnCode: QIPLogInfo.QIP_success,
-      message: `Ready to purchase ${amount} tokens for ${validation.totalCost} energy`,
+      message: `Ready to purchase ${amount} tokens for ${validation.totalCost} QUBIC`,
     };
   },
 
