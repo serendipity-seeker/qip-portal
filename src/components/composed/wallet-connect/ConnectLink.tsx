@@ -1,32 +1,28 @@
-import { MdLock, MdLockOpen } from "react-icons/md";
+import { MdLockOpen } from "react-icons/md";
 import ConnectModal from "./ConnectModal";
 import { useQubicConnect } from "./QubicConnectContext";
 import { Button } from "@/components/ui/button";
+import WalletDropdown from "./WalletDropdown";
 
 const ConnectLink: React.FC<{ darkMode?: boolean }> = ({ darkMode }) => {
-  const { connected, showConnectModal, toggleConnectModal } = useQubicConnect();
+  const { connected, wallet, disconnect, showConnectModal, toggleConnectModal } = useQubicConnect();
 
   return (
     <>
-      <Button
-        variant="default"
-        size="sm"
-        className="flex items-center gap-2"
-        onClick={() => toggleConnectModal()}
-        type="button"
-      >
-        {connected ? (
-          <>
-            <MdLock size={20} />
-            <span>Connected</span>
-          </>
-        ) : (
-          <>
-            <MdLockOpen size={20} />
-            <span>Connect Wallet</span>
-          </>
-        )}
-      </Button>
+      {connected && wallet ? (
+        <WalletDropdown wallet={wallet} onDisconnect={disconnect} />
+      ) : (
+        <Button
+          variant="default"
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={() => toggleConnectModal()}
+          type="button"
+        >
+          <MdLockOpen size={20} />
+          <span>Connect Wallet</span>
+        </Button>
+      )}
       <ConnectModal open={showConnectModal} onClose={() => toggleConnectModal()} darkMode={darkMode} />
     </>
   );
