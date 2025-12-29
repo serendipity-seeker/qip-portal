@@ -211,8 +211,12 @@ export const createICOTx = async (
 ) => {
   // Build the payload according to createICO_input structure
   const issuerBytes = qHelper.getIdentityBytes(input.issuer);
-  const addressBytes = input.addresses.map((addr) => qHelper.getIdentityBytes(addr));
 
+  const addressBytes = input.addresses.map((addr) => {
+    if(addr === "") return new Uint8Array(32);
+    const bytes = qHelper.getIdentityBytes(addr);
+    return bytes;
+  });
   const payloadData: { data: number | bigint | Uint8Array; type: "uint8" | "uint16" | "uint32" | "bigint64" | "id" }[] =
     [];
 

@@ -112,7 +112,20 @@ export default function CreateICOPage() {
         const filteredAssets = assets.filter((asset) =>
           ALLOWED_CONTRACT_INDICES.includes(asset.managingContractIndex),
         );
-        setOwnedAssets(filteredAssets);
+
+        // Aggregate assets with the same name and issuer (sum balances from QX and QIP)
+        const aggregatedMap = new Map<string, OwnedAsset>();
+        for (const asset of filteredAssets) {
+          const key = `${asset.assetName}::${asset.issuer}`;
+          const existing = aggregatedMap.get(key);
+          if (existing) {
+            existing.amount += asset.amount;
+          } else {
+            aggregatedMap.set(key, { ...asset });
+          }
+        }
+
+        setOwnedAssets(Array.from(aggregatedMap.values()));
       } catch (error) {
         console.error("Failed to fetch assets:", error);
         setOwnedAssets([]);

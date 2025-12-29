@@ -173,8 +173,6 @@ const useGlobalTxMonitor = () => {
           await resultHandlers.onFailure();
         };
 
-        // "status" is not well defined, assuming it should be something like latestTick (as in others)
-        // We'll check latestTick as per the usage in v2/v1
         if (!latestTick) return;
 
         console.log("progress", latestTick, task.targetTick);
@@ -186,6 +184,8 @@ const useGlobalTxMonitor = () => {
             tickEvents = await fetchTickEvents(task.targetTick);
             if (tickEvents) break;
             attempts++;
+            // Small delay between retries
+            await new Promise((resolve) => setTimeout(resolve, 500));
           }
           if (!tickEvents) {
             console.log("no tick events");
@@ -194,13 +194,23 @@ const useGlobalTxMonitor = () => {
             return;
           }
           const logs = await decodeQIPLog(tickEvents);
-          const lastLogType = logs[logs.length - 1]?.logType;
+          
+          // Filter logs for this specific transaction if txHash is provided
+          const relevantLogs = task.txHash 
+            ? logs.filter((log) => log.txId === task.txHash)
+            : logs;
+          
+          const lastLogType = relevantLogs[relevantLogs.length - 1]?.logType;
 
           stopMonitoring(taskId);
+          
+          // QIP success types
           if (lastLogType === "SUCCESS") {
             await onSuccess();
           } else {
-            if (logs.length > 0) toast.error(lastLogType);
+            if (relevantLogs.length > 0) {
+              toast.error(`Transaction failed: ${lastLogType}`);
+            }
             await onFailure();
           }
         }
@@ -209,6 +219,7 @@ const useGlobalTxMonitor = () => {
   }, [isMonitoring, monitoringTasks, latestTick, monitorStrategy, stopMonitoring, resultHandlers]);
 
   useEffect(() => {
+    console.log({isMonitoring})
     if (!isMonitoring) return;
     const toastId = toast.loading("Monitoring transaction...", {
       position: "bottom-right",

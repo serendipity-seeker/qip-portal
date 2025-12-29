@@ -1,16 +1,13 @@
 import { toast } from "sonner";
 import { useAtom } from "jotai";
-
 import { assetNameConvert, QIP_SC_INDEX } from "@/utils";
-import { broadcastTx, fetchAssetsBalance } from "@/services/rpc.service";
+import { broadcastTx, fetchAssetsBalance, fetchTickInfo } from "@/services/rpc.service";
 import { settingsAtom } from "@/store/settings";
-import { tickInfoAtom } from "@/store/tickInfo";
 import { transferShareManagementRights } from "@/services/sc.service";
 import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
 import { useTxMonitor } from "@/store/txMonitor";
 
 const useTransferShareManagementRights = () => {
-  const [tickInfo] = useAtom(tickInfoAtom);
   const [settings] = useAtom(settingsAtom);
   const { wallet, getSignedTx } = useQubicConnect();
   const { startMonitoring } = useTxMonitor();
@@ -50,6 +47,7 @@ const useTransferShareManagementRights = () => {
     }
 
     try {
+      const tickInfo = await fetchTickInfo();
       const targetTick = tickInfo.tick + settings.tickOffset;
       const targetContractOriginAmount = await fetchAssetsBalance(wallet.publicKey, assetName, contractIndex);
 

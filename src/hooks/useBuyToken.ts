@@ -2,15 +2,12 @@ import { toast } from "sonner";
 import { useAtom } from "jotai";
 import { useState, useCallback } from "react";
 
-import { broadcastTx, fetchTickEvents } from "@/services/rpc.service";
+import { broadcastTx, fetchTickInfo } from "@/services/rpc.service";
 import { buyTokenTx } from "@/services/sc.service";
-import { isQIPTxSuccessful } from "@/services/log.service";
 import { settingsAtom } from "@/store/settings";
-import { tickInfoAtom } from "@/store/tickInfo";
 import { useTxMonitor } from "@/store/txMonitor";
 import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
 import { qipService } from "@/utils/qip-service";
-import { QIP_LOG_MESSAGES, QIPLogInfo } from "@/utils/constants";
 import type { BuyTokenResult } from "@/types";
 
 interface UseBuyTokenOptions {
@@ -19,7 +16,6 @@ interface UseBuyTokenOptions {
 }
 
 const useBuyToken = (options?: UseBuyTokenOptions) => {
-  const [tickInfo] = useAtom(tickInfoAtom);
   const [settings] = useAtom(settingsAtom);
   const { wallet, getSignedTx } = useQubicConnect();
   const { startMonitoring } = useTxMonitor();
@@ -42,9 +38,11 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
         if (!validation.valid) {
           toast.error(validation.message);
           options?.onError?.(validation.message);
+          setIsLoading(false);
           return { success: false, returnCode: validation.returnCode, message: validation.message };
         }
 
+        const tickInfo = await fetchTickInfo();
         const targetTick = tickInfo.tick + settings.tickOffset;
         const { totalCost } = validation;
 
@@ -60,55 +58,43 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
 
         toast.info(`Transaction broadcast: ${txId.slice(0, 8)}...`);
 
-        // Set up monitoring
+        // Set up monitoring with v3 strategy for QIP contract logs
         const taskId = `buy-token-${Date.now()}`;
-
-        const checker = async (): Promise<boolean> => {
-          try {
-            const tickEvents = await fetchTickEvents(targetTick);
-            if (!tickEvents) return false;
-            const result = await isQIPTxSuccessful(tickEvents, txId);
-            return result.success;
-          } catch {
-            return false;
-          }
-        };
 
         const onSuccess = async () => {
           const successResult: BuyTokenResult = {
             success: true,
-            returnCode: QIPLogInfo.QIP_success,
+            returnCode: 0,
             message: `Successfully purchased ${amount} tokens for ${totalCost} QUBIC`,
             txId,
           };
           toast.success(successResult.message);
           options?.onSuccess?.(successResult);
+          setIsLoading(false);
         };
 
         const onFailure = async () => {
-          // Try to get more details from the log
-          try {
-            const tickEvents = await fetchTickEvents(targetTick);
-            if (tickEvents) {
-              const result = await isQIPTxSuccessful(tickEvents, txId);
-              const message = QIP_LOG_MESSAGES[result.logType as unknown as QIPLogInfo] || result.logType;
-              toast.error(`Transaction failed: ${message}`);
-              options?.onError?.(message);
-              return;
-            }
-          } catch {
-            // Fallback error
-          }
           const message = "Transaction failed";
-          toast.error(message);
           options?.onError?.(message);
+          setIsLoading(false);
         };
 
-        startMonitoring(taskId, { checker, onSuccess, onFailure, targetTick, txHash: txId }, "v1");
+        // Use v3 strategy for QIP contract operations (provides better error messages via logs)
+        startMonitoring(
+          taskId,
+          {
+            checker: async () => false, // v3 doesn't use checker
+            onSuccess,
+            onFailure,
+            targetTick,
+            txHash: txId,
+          },
+          "v3",
+        );
 
         return {
           success: true,
-          returnCode: QIPLogInfo.QIP_success,
+          returnCode: 0,
           message: `Transaction submitted. Monitoring for confirmation...`,
           txId,
         };
@@ -116,12 +102,11 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
         const message = error instanceof Error ? error.message : "Failed to purchase tokens";
         toast.error(message);
         options?.onError?.(message);
-        return { success: false, returnCode: -1, message };
-      } finally {
         setIsLoading(false);
+        return { success: false, returnCode: -1, message };
       }
     },
-    [wallet, tickInfo, settings, getSignedTx, startMonitoring, options],
+    [wallet, settings, getSignedTx, startMonitoring, options],
   );
 
   return {
@@ -131,4 +116,3 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
 };
 
 export default useBuyToken;
-
