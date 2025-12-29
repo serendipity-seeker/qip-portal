@@ -3,10 +3,28 @@ import { useState, useEffect } from "react";
 import { qipService, type CreateICOInput } from "@/utils/qip-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn, formatQubicAmount } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import useCreateICO from "@/hooks/useCreateICO";
 import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
+import { fetchAssetsOwnership } from "@/services/rpc.service";
+
+interface OwnedAsset {
+  assetName: string;
+  issuer: string;
+  amount: number;
+  managingContractIndex: number;
+}
+
+// QX contract index is 1, QIP contract index is 18
+const ALLOWED_CONTRACT_INDICES = [1, 18];
 
 export default function CreateICOPage() {
   const navigate = useNavigate();
@@ -15,6 +33,9 @@ export default function CreateICOPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [ownedAssets, setOwnedAssets] = useState<OwnedAsset[]>([]);
+  const [loadingAssets, setLoadingAssets] = useState(false);
+  const [selectedAssetKey, setSelectedAssetKey] = useState<string>("");
 
   const { createICO, isLoading: creating, step } = useCreateICO({
     onSuccess: (result) => {
@@ -76,6 +97,45 @@ export default function CreateICOPage() {
     loadData();
   }, []);
 
+  // Fetch user's owned assets when wallet is connected
+  useEffect(() => {
+    const fetchUserAssets = async () => {
+      if (!wallet?.publicKey) {
+        setOwnedAssets([]);
+        setSelectedAssetKey("");
+        return;
+      }
+
+      setLoadingAssets(true);
+      try {
+        const assets = await fetchAssetsOwnership(wallet.publicKey);
+        // Filter to only show assets managed by QX (1) or QIP (18) contracts
+        const filteredAssets = assets.filter((asset) =>
+          ALLOWED_CONTRACT_INDICES.includes(asset.managingContractIndex),
+        );
+        setOwnedAssets(filteredAssets);
+      } catch (error) {
+        console.error("Failed to fetch assets:", error);
+        setOwnedAssets([]);
+      } finally {
+        setLoadingAssets(false);
+      }
+    };
+
+    fetchUserAssets();
+  }, [wallet?.publicKey]);
+
+  // Handle asset selection
+  const handleAssetSelect = (assetKey: string) => {
+    setSelectedAssetKey(assetKey);
+    const [assetName, issuer] = assetKey.split("::");
+    setFormData((prev) => ({
+      ...prev,
+      assetName,
+      issuer,
+    }));
+  };
+
   const totalPercent =
     formData.percent1 +
     formData.percent2 +
@@ -121,13 +181,8 @@ export default function CreateICOPage() {
       return;
     }
 
-    if (!formData.assetName || formData.assetName.length === 0) {
-      setError("Asset name is required");
-      return;
-    }
-
-    if (!formData.issuer || formData.issuer.length !== 60) {
-      setError("Valid issuer address is required (60 characters)");
+    if (!selectedAssetKey || !formData.assetName || !formData.issuer) {
+      setError("Please select an asset to sell");
       return;
     }
 
@@ -169,36 +224,63 @@ export default function CreateICOPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="text-foreground mb-2 block text-sm font-medium">Asset Name</label>
-              <Input
-                type="text"
-                placeholder="e.g., MYTOKEN (max 7 characters)"
-                value={formData.assetName}
-                onChange={(e) => setFormData({ ...formData, assetName: e.target.value.toUpperCase().slice(0, 7) })}
-                required
-                disabled={creating}
-                maxLength={7}
-              />
+              <label className="text-foreground mb-2 block text-sm font-medium">Select Asset</label>
+              {!wallet ? (
+                <div className="bg-muted text-muted-foreground rounded-md p-3 text-sm">
+                  Connect your wallet to see your assets
+                </div>
+              ) : loadingAssets ? (
+                <div className="bg-muted text-muted-foreground rounded-md p-3 text-sm">
+                  Loading your assets...
+                </div>
+              ) : ownedAssets.length === 0 ? (
+                <div className="bg-muted text-muted-foreground rounded-md p-3 text-sm">
+                  No eligible assets found. You need tokens managed by QX or QIP contracts.
+                </div>
+              ) : (
+                <Select
+                  value={selectedAssetKey}
+                  onValueChange={handleAssetSelect}
+                  disabled={creating}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select an asset to sell" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card text-card-foreground">
+                    {ownedAssets.map((asset) => {
+                      const assetKey = `${asset.assetName}::${asset.issuer}`;
+                      return (
+                        <SelectItem key={assetKey} value={assetKey}>
+                          <div className="flex w-full items-center justify-between gap-4">
+                            <span className="font-semibold">{asset.assetName}</span>
+                            <span className="text-muted-foreground text-xs">
+                              {formatQubicAmount(asset.amount)} available
+                            </span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              )}
               <p className="text-muted-foreground mt-1 text-xs">
-                The token name must match your existing asset on the blockchain.
+                Select a token from your wallet to sell in this ICO.
               </p>
             </div>
 
-            <div>
-              <label className="text-foreground mb-2 block text-sm font-medium">Issuer Address</label>
-              <Input
-                type="text"
-                placeholder="Qubic address of the token issuer"
-                value={formData.issuer}
-                onChange={(e) => setFormData({ ...formData, issuer: e.target.value.toUpperCase() })}
-                required
-                disabled={creating}
-                className="font-mono text-xs"
-              />
-              <p className="text-muted-foreground mt-1 text-xs">
-                The issuer of the token you want to sell. You must own these tokens.
-              </p>
-            </div>
+            {/* Show selected asset details */}
+            {selectedAssetKey && (
+              <div className="bg-muted space-y-2 rounded-md p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">Asset Name</span>
+                  <span className="text-foreground font-semibold">{formData.assetName}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground text-sm">Issuer</span>
+                  <p className="text-foreground mt-1 break-all font-mono text-xs">{formData.issuer}</p>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="text-foreground mb-2 block text-sm font-medium">Start Epoch</label>

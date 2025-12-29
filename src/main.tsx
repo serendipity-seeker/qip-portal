@@ -13,12 +13,7 @@ createRoot(document.getElementById("root")!).render(
       <WalletConnectProvider>
         <QubicConnectProvider>
           <App />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              className: "!bg-card !text-card-foreground !border-border !border",
-            }}
-          />
+          <Toaster position="top-right" theme="dark" richColors closeButton swipeDirections={["right", "left"]} />
         </QubicConnectProvider>
       </WalletConnectProvider>
     </HelmetProvider>
