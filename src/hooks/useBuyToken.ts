@@ -46,7 +46,7 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
         }
 
         const targetTick = tickInfo.tick + settings.tickOffset;
-        const { price, totalCost } = validation;
+        const { totalCost } = validation;
 
         // Create the transaction
         const tx = await buyTokenTx(wallet.publicKey, indexOfICO, amount, totalCost, targetTick);

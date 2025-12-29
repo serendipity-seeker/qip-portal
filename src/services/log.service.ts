@@ -101,7 +101,7 @@ const decodeQbayLogBody = (eventData: string, logType: keyof typeof QBAY_LOGS) =
 /**
  * Decode QIP contract logs
  */
-const decodeQIPLogBody = (eventData: string, eventType: number) => {
+const decodeQIPLogBody = (eventData: string, _eventType: number) => {
   const eventDataArray = base64ToUint8Array(eventData);
   const dataView = new DataView(eventDataArray.buffer);
 
