@@ -62,16 +62,17 @@ const Header: React.FC = () => {
             </Button> */}
 
             {/* Wallet Button */}
-            <ConnectLink darkMode={true} />
+            <div className="hidden lg:block">
+              <ConnectLink darkMode={true} />
+            </div>
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-2 md:hidden"
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
-
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-2 md:hidden"
-          >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
         </div>
 
         {/* Mobile Navigation */}
