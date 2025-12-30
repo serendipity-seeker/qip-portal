@@ -12,8 +12,8 @@ const defaultMeta = {
   title: "QIP Portal | Qubic Initial Public Offering Platform",
   description:
     "Launch and participate in token offerings on the Qubic network. QIP Portal provides a secure, transparent platform for Qubic-based ICOs and token sales.",
-  image: "https://qip.qubic.org/qipdazzle.png",
-  url: "https://qip.qubic.org",
+  image: "/qipdazzle.png",
+  url: "https://qubicico.com",
   type: "website",
 };
 
