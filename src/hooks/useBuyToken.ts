@@ -21,7 +21,7 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
   const { wallet, getSignedTx } = useQubicConnect();
   const { startMonitoring } = useTxMonitor();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Track token balances before purchase to verify tokens received
   // We need to check both QX and QIP since tokens might go to either
   const qxBalanceBeforeRef = useRef<number>(0);
@@ -89,16 +89,16 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
         // Check BOTH QX and QIP contracts since tokens might go to either
         const checker = async () => {
           if (!wallet) return false;
-          
+
           const [currentQxBalance, currentQipBalance] = await Promise.all([
             fetchAssetsBalance(wallet.publicKey, icoInfo.assetName, QX_SC_INDEX),
             fetchAssetsBalance(wallet.publicKey, icoInfo.assetName, QIP_SC_INDEX),
           ]);
-          
+
           // Calculate total balance increase across both contracts
           const totalBefore = qxBalanceBeforeRef.current + qipBalanceBeforeRef.current;
           const totalAfter = currentQxBalance + currentQipBalance;
-          
+
           // Check if total balance increased by at least the expected amount
           return totalAfter >= totalBefore + amount;
         };

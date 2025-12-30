@@ -29,10 +29,7 @@ export const useBalance = (publicId: string) => {
     setIsError(false);
 
     try {
-      const [balanceData, assetsData] = await Promise.all([
-        fetchBalance(publicId),
-        fetchAssetsOwnership(publicId),
-      ]);
+      const [balanceData, assetsData] = await Promise.all([fetchBalance(publicId), fetchAssetsOwnership(publicId)]);
 
       setBalance(balanceData);
       setAssets(

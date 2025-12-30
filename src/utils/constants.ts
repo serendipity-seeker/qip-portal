@@ -45,4 +45,3 @@ export const QIP_LOG_MESSAGES: Record<QIPLogInfo, string> = {
   [QIPLogInfo.QIP_invalidEpoch]: "ICO is not active in current epoch",
   [QIPLogInfo.QIP_insufficientInvocationReward]: "Insufficient funds for purchase",
 };
-

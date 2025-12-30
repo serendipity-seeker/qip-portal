@@ -17,13 +17,7 @@ const defaultMeta = {
   type: "website",
 };
 
-export default function SEO({
-  title,
-  description,
-  image,
-  url,
-  type,
-}: SEOProps) {
+export default function SEO({ title, description, image, url, type }: SEOProps) {
   const meta = {
     title: title ? `${title} | QIP Portal` : defaultMeta.title,
     description: description || defaultMeta.description,
@@ -58,4 +52,3 @@ export default function SEO({
     </Helmet>
   );
 }
-

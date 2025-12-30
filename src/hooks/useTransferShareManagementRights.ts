@@ -170,7 +170,11 @@ const useTransferShareManagementRights = () => {
       };
 
       // Use v3 strategy for QIP contract operations
-      startMonitoring(taskId, { checker: checker, onSuccess: handleSuccess, onFailure: handleFailure, targetTick, txHash: res.transactionId }, "v3");
+      startMonitoring(
+        taskId,
+        { checker: checker, onSuccess: handleSuccess, onFailure: handleFailure, targetTick, txHash: res.transactionId },
+        "v3",
+      );
     } catch (error) {
       console.error("Error recovering to QX:", error);
       toast.error("Error recovering tokens to QX");

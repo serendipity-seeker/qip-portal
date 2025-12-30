@@ -221,15 +221,13 @@ const ICODetailPage: React.FC = () => {
 
             <div>
               <p className="text-muted-foreground mb-2 text-xs">Progress</p>
-              <div className="bg-muted h-2 w-full rounded-full overflow-hidden">
+              <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
                 <div
                   className="bg-primary h-full transition-all duration-300"
                   style={{ width: `${qipService.getProgress(ico)}%` }}
                 />
               </div>
-              <p className="text-muted-foreground mt-1 text-xs text-right">
-                {qipService.getProgress(ico)}% sold
-              </p>
+              <p className="text-muted-foreground mt-1 text-right text-xs">{qipService.getProgress(ico)}% sold</p>
             </div>
           </div>
         </div>

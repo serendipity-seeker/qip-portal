@@ -194,16 +194,14 @@ const useGlobalTxMonitor = () => {
             return;
           }
           const logs = await decodeQIPLog(tickEvents);
-          
+
           // Filter logs for this specific transaction if txHash is provided
-          const relevantLogs = task.txHash 
-            ? logs.filter((log) => log.txId === task.txHash)
-            : logs;
-          
+          const relevantLogs = task.txHash ? logs.filter((log) => log.txId === task.txHash) : logs;
+
           const lastLogType = relevantLogs[relevantLogs.length - 1]?.logType;
 
           stopMonitoring(taskId);
-          
+
           // QIP success types
           if (lastLogType === "SUCCESS") {
             await onSuccess();

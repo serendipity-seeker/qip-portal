@@ -24,7 +24,7 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
   const { handleTransferShareRights, checkTransferShareRights } = useTransferShareManagementRights();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"idle" | "transferring" | "creating">("idle");
-  
+
   // Track ICO count before creation to verify new ICO was added
   const icoCountBeforeRef = useRef<number>(0);
 
@@ -94,20 +94,18 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
     // Checker: verify ICO was created by checking if a new ICO exists with matching asset/issuer/creator
     const checker = async () => {
       if (!wallet) return false;
-      
+
       const icos = await getAllICOs();
-      
+
       // Check if ICO count increased AND a new ICO matches our criteria
       if (icos.length > icoCountBeforeRef.current) {
         const newICO = icos.find(
           (ico) =>
-            ico.assetName === input.assetName &&
-            ico.issuer === input.issuer &&
-            ico.creatorOfICO === wallet.publicKey
+            ico.assetName === input.assetName && ico.issuer === input.issuer && ico.creatorOfICO === wallet.publicKey,
         );
         return !!newICO;
       }
-      
+
       return false;
     };
 

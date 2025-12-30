@@ -71,7 +71,6 @@ export const uriDecode = (uri: Uint8Array) => {
   return uriString.replace(/\0/g, ""); // Remove null characters
 };
 
-
 export const createPayload = (data: ICreatePayload[]) => {
   const TYPE_SIZES = {
     uint8: 1,

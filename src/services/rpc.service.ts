@@ -180,9 +180,7 @@ export const fetchArchiverStatus = async (): Promise<ArchiverStatus> => {
 };
 
 export const fetchRichList = async (page: number, pageSize: number): Promise<RichList> => {
-  const richListResult = await rpc.get(
-    `${RPC_URL}/v1/rich-list?page=${page}&pageSize=${pageSize}`,
-  );
+  const richListResult = await rpc.get(`${RPC_URL}/v1/rich-list?page=${page}&pageSize=${pageSize}`);
   const richList = await richListResult.data;
   return richList;
 };
@@ -196,9 +194,7 @@ export const fetchTxHistory = async (publicId: string, startTick: number, endTic
 };
 
 export const fetchEpochTicks = async (epoch: number, page: number, pageSize: number): Promise<EpochTicks> => {
-  const epochTicksResult = await rpc.get(
-    `${RPC_URL}/v2/epochs/${epoch}/ticks?page=${page}&pageSize=${pageSize}`,
-  );
+  const epochTicksResult = await rpc.get(`${RPC_URL}/v2/epochs/${epoch}/ticks?page=${page}&pageSize=${pageSize}`);
   const epochTicks = await epochTicksResult.data;
   return epochTicks.data;
 };

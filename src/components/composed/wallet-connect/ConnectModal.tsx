@@ -334,17 +334,17 @@ const ConnectModal = ({ open, onClose, darkMode }: { open: boolean; onClose: () 
                             value={connectionURI}
                             options={{
                               ...QRCodePresets.walletConnect,
-                              color: { 
-                                dark: darkMode ? '#ffffff' : '#000000', 
-                                light: darkMode ? '#1f2937' : '#ffffff' 
+                              color: {
+                                dark: darkMode ? "#ffffff" : "#000000",
+                                light: darkMode ? "#1f2937" : "#ffffff",
                               },
-                              borderColor: darkMode ? '#374151' : '#e5e7eb',
-                              shadowColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                              borderColor: darkMode ? "#374151" : "#e5e7eb",
+                              shadowColor: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
                               backgroundColor: "transparent",
                             }}
                             className="mx-auto transition-all duration-300 hover:scale-105"
                             onGenerated={(dataUrl) => setQrDataUrl(dataUrl)}
-                            onError={(error) => console.error('QR generation error:', error)}
+                            onError={(error) => console.error("QR generation error:", error)}
                           />
                         ) : (
                           <div className="border-foreground mx-auto h-8 w-8 animate-spin rounded-full border-t-2"></div>
@@ -356,16 +356,16 @@ const ConnectModal = ({ open, onClose, darkMode }: { open: boolean; onClose: () 
                           size="sm"
                           onClick={() => copyText(connectionURI)}
                           disabled={!connectionURI}
-                          className="text-xs text-primary"
+                          className="text-primary text-xs"
                         >
                           Copy URI
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => qrDataUrl && downloadQRCode(qrDataUrl, 'wallet-connect-qr.png')}
+                          onClick={() => qrDataUrl && downloadQRCode(qrDataUrl, "wallet-connect-qr.png")}
                           disabled={!qrDataUrl}
-                          className="text-xs text-primary"
+                          className="text-primary text-xs"
                         >
                           Download QR
                         </Button>

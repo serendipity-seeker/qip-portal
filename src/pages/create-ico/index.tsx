@@ -3,13 +3,7 @@ import { useState, useEffect } from "react";
 import { qipService, type CreateICOInput } from "@/utils/qip-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn, formatQubicAmount } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import useCreateICO from "@/hooks/useCreateICO";
@@ -36,7 +30,11 @@ export default function CreateICOPage() {
   const [loadingAssets, setLoadingAssets] = useState(false);
   const [selectedAssetKey, setSelectedAssetKey] = useState<string>("");
 
-  const { createICO, isLoading: creating, step } = useCreateICO({
+  const {
+    createICO,
+    isLoading: creating,
+    step,
+  } = useCreateICO({
     onSuccess: (result) => {
       toast.success(result.message);
       setTimeout(() => {
@@ -109,9 +107,7 @@ export default function CreateICOPage() {
       try {
         const assets = await fetchAssetsOwnership(wallet.publicKey);
         // Filter to only show assets managed by QX (1) or QIP (18) contracts
-        const filteredAssets = assets.filter((asset) =>
-          ALLOWED_CONTRACT_INDICES.includes(asset.managingContractIndex),
-        );
+        const filteredAssets = assets.filter((asset) => ALLOWED_CONTRACT_INDICES.includes(asset.managingContractIndex));
 
         // Aggregate assets with the same name and issuer (sum balances from QX and QIP)
         const aggregatedMap = new Map<string, OwnedAsset>();
@@ -240,19 +236,13 @@ export default function CreateICOPage() {
                   Connect your wallet to see your assets
                 </div>
               ) : loadingAssets ? (
-                <div className="bg-muted text-muted-foreground rounded-md p-3 text-sm">
-                  Loading your assets...
-                </div>
+                <div className="bg-muted text-muted-foreground rounded-md p-3 text-sm">Loading your assets...</div>
               ) : ownedAssets.length === 0 ? (
                 <div className="bg-muted text-muted-foreground rounded-md p-3 text-sm">
                   No eligible assets found. You need tokens managed by QX or QIP contracts.
                 </div>
               ) : (
-                <Select
-                  value={selectedAssetKey}
-                  onValueChange={handleAssetSelect}
-                  disabled={creating}
-                >
+                <Select value={selectedAssetKey} onValueChange={handleAssetSelect} disabled={creating}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select an asset to sell" />
                   </SelectTrigger>
@@ -273,9 +263,7 @@ export default function CreateICOPage() {
                   </SelectContent>
                 </Select>
               )}
-              <p className="text-muted-foreground mt-1 text-xs">
-                Select a token from your wallet to sell in this ICO.
-              </p>
+              <p className="text-muted-foreground mt-1 text-xs">Select a token from your wallet to sell in this ICO.</p>
             </div>
 
             {/* Show selected asset details */}
@@ -287,7 +275,7 @@ export default function CreateICOPage() {
                 </div>
                 <div>
                   <span className="text-muted-foreground text-sm">Issuer</span>
-                  <p className="text-foreground mt-1 break-all font-mono text-xs">{formData.issuer}</p>
+                  <p className="text-foreground mt-1 font-mono text-xs break-all">{formData.issuer}</p>
                 </div>
               </div>
             )}
@@ -486,12 +474,7 @@ export default function CreateICOPage() {
           <div className="bg-muted rounded-lg p-4">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-foreground text-sm font-medium">Total Distribution</span>
-              <span
-                className={cn(
-                  "text-lg font-bold",
-                  isPercentValid ? "text-success-40" : "text-error-40",
-                )}
-              >
+              <span className={cn("text-lg font-bold", isPercentValid ? "text-success-40" : "text-error-40")}>
                 {totalPercent}%
               </span>
             </div>
@@ -503,9 +486,7 @@ export default function CreateICOPage() {
               <span className="text-muted-foreground">Contract Shareholders</span>
               <span className="text-foreground font-medium">5%</span>
             </div>
-            {!isPercentValid && (
-              <p className="mt-2 text-xs text-error-40">Percentages must sum exactly to 95%</p>
-            )}
+            {!isPercentValid && <p className="text-error-40 mt-2 text-xs">Percentages must sum exactly to 95%</p>}
           </div>
         </div>
 

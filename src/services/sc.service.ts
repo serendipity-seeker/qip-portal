@@ -18,7 +18,7 @@ const getResponseValues = (res: any) => {
   if (!res.responseData) return null;
   const responseView = new DataView(base64ToUint8Array(res.responseData).buffer);
   const responseArray = base64ToUint8Array(res.responseData);
- 
+
   // Check response Array data is all 0, if true, return null
   if (responseArray.every((byte) => byte === 0)) return null;
 
@@ -213,7 +213,7 @@ export const createICOTx = async (
   const issuerBytes = qHelper.getIdentityBytes(input.issuer);
 
   const addressBytes = input.addresses.map((addr) => {
-    if(addr === "") return new Uint8Array(32);
+    if (addr === "") return new Uint8Array(32);
     const bytes = qHelper.getIdentityBytes(addr);
     return bytes;
   });
@@ -293,15 +293,7 @@ export const transferShareManagementRightsFromQIP = async (
     { data: numberOfShares, type: "bigint64" },
     { data: newManagingContractIndex, type: "uint32" },
   ]);
-  return await createSCTx(
-    sourceID,
-    QIP_SC_INDEX,
-    3,
-    payload.getPackageSize(),
-    QIP_TRANSFER_RIGHTS_FEE,
-    tick,
-    payload,
-  );
+  return await createSCTx(sourceID, QIP_SC_INDEX, 3, payload.getPackageSize(), QIP_TRANSFER_RIGHTS_FEE, tick, payload);
 };
 
 // ==================== Legacy NFT Marketplace Functions ====================

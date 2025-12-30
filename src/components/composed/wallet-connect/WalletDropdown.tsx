@@ -92,7 +92,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({ wallet, onDisconnect })
             <div className="space-y-2">
               <div className="text-muted-foreground text-sm font-medium">Wallet Address</div>
               <div className="bg-muted flex items-center gap-2 rounded-md p-2">
-                <span className="flex-1 break-all font-mono text-xs">{wallet.publicKey}</span>
+                <span className="flex-1 font-mono text-xs break-all">{wallet.publicKey}</span>
                 <Button variant="ghost" size="sm" onClick={handleCopyAddress} className="h-8 w-8 shrink-0 p-1">
                   <MdContentCopy size={16} />
                 </Button>
@@ -103,13 +103,7 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({ wallet, onDisconnect })
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground text-sm font-medium">Balance</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRefresh}
-                  disabled={isLoading}
-                  className="h-6 w-6 p-0"
-                >
+                <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={isLoading} className="h-6 w-6 p-0">
                   <MdRefresh size={14} className={isLoading ? "animate-spin" : ""} />
                 </Button>
               </div>
@@ -128,17 +122,13 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({ wallet, onDisconnect })
             {Object.keys(assetsByContract).length > 0 && (
               <div className="space-y-3">
                 <div className="text-muted-foreground text-sm font-medium">Tokens</div>
-                
+
                 {Object.entries(assetsByContract).map(([contractName, contractAssets]) => (
                   <div key={contractName} className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-wide">
-                        {contractName}
-                      </span>
+                      <span className="text-xs font-semibold tracking-wide uppercase">{contractName}</span>
                       {contractName === "QIP" && (
-                        <span className="bg-warning/20 text-warning rounded px-1.5 py-0.5 text-xs">
-                          Locked
-                        </span>
+                        <span className="bg-warning/20 text-warning rounded px-1.5 py-0.5 text-xs">Locked</span>
                       )}
                     </div>
                     <div className="bg-muted max-h-32 space-y-1 overflow-y-auto rounded-md p-2">
@@ -149,11 +139,9 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({ wallet, onDisconnect })
                         >
                           <div className="flex flex-col">
                             <span className="text-sm font-medium">{asset.assetName}</span>
-                            <span className="text-muted-foreground text-xs">
-                              {formatQubicAmount(asset.amount)}
-                            </span>
+                            <span className="text-muted-foreground text-xs">{formatQubicAmount(asset.amount)}</span>
                           </div>
-                          
+
                           {/* Show recover button for QIP assets */}
                           {asset.managingContractIndex === QIP_SC_INDEX && (
                             <Button
@@ -184,8 +172,8 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({ wallet, onDisconnect })
                 {hasQIPAssets && (
                   <div className="bg-warning/10 border-warning/20 rounded-md border p-2">
                     <p className="text-warning text-xs">
-                      <strong>Note:</strong> Tokens in QIP contract cannot be traded on QX. 
-                      Click "To QX" to transfer them back for trading.
+                      <strong>Note:</strong> Tokens in QIP contract cannot be traded on QX. Click "To QX" to transfer
+                      them back for trading.
                     </p>
                   </div>
                 )}

@@ -33,10 +33,7 @@ export function StatsBar() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [icos, currentEpoch] = await Promise.all([
-          qipService.getAllICOs(),
-          qipService.getCurrentEpoch(),
-        ]);
+        const [icos, currentEpoch] = await Promise.all([qipService.getAllICOs(), qipService.getCurrentEpoch()]);
 
         if (icos.length === 0) {
           setStats([
@@ -68,9 +65,10 @@ export function StatsBar() {
           0,
         );
 
-        const avgProgress = icos.length > 0
-          ? Math.round(icos.reduce((sum, ico) => sum + qipService.getProgress(ico), 0) / icos.length)
-          : 0;
+        const avgProgress =
+          icos.length > 0
+            ? Math.round(icos.reduce((sum, ico) => sum + qipService.getProgress(ico), 0) / icos.length)
+            : 0;
 
         const formatNumber = (num: number): string => {
           if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -120,7 +118,7 @@ export function StatsBar() {
               {stat.icon}
             </div>
             {loading && (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+              <div className="border-primary/30 border-t-primary h-4 w-4 animate-spin rounded-full border-2" />
             )}
           </div>
           <div className="space-y-1">
