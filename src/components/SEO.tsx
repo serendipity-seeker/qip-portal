@@ -9,9 +9,9 @@ interface SEOProps {
 }
 
 const defaultMeta = {
-  title: "QIP Portal | Qubic Initial Coin Offering platform",
+  title: "Qubic ICO Portal | Qubic Initial Coin Offering platform",
   description:
-    "Launch and participate in token offerings on the Qubic network. QIP Portal provides a secure, transparent platform for Qubic-based ICOs and token sales.",
+    "Launch and participate in token offerings on the Qubic network. Qubic ICO Portal provides a secure, transparent platform for Qubic-based ICOs and token sales.",
   image: "/qipdazzle.png",
   url: "https://qubicico.com",
   type: "website",
@@ -19,7 +19,7 @@ const defaultMeta = {
 
 export default function SEO({ title, description, image, url, type }: SEOProps) {
   const meta = {
-    title: title ? `${title} | QIP Portal` : defaultMeta.title,
+    title: title ? `${title} | Qubic ICO Portal` : defaultMeta.title,
     description: description || defaultMeta.description,
     image: image || defaultMeta.image,
     url: url || defaultMeta.url,

@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
           <div className="text-muted-foreground flex flex-1 items-center gap-2 text-sm">
             <img src="/logo-text-short.svg" alt="logo-short" className="h-4 w-auto" />
             <div className="text-muted-foreground">
-              {"\u00A9"} {getCurrentYear()} QIP Portal
+              {"\u00A9"} {getCurrentYear()} Qubic ICO Portal
             </div>
           </div>
           <div className="flex flex-col items-center gap-2 text-sm md:flex-row">
