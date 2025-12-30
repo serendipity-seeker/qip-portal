@@ -9,7 +9,7 @@ interface SEOProps {
 }
 
 const defaultMeta = {
-  title: "QIP Portal | Qubic Initial Public Offering Platform",
+  title: "QIP Portal | Qubic Initial Coin Offering platform",
   description:
     "Launch and participate in token offerings on the Qubic network. QIP Portal provides a secure, transparent platform for Qubic-based ICOs and token sales.",
   image: "/qipdazzle.png",
