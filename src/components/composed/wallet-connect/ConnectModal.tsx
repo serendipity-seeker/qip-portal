@@ -13,7 +13,7 @@ import { useQubicConnect } from "./QubicConnectContext";
 import type { Account } from "./types";
 import { useWalletConnect } from "./WalletConnectContext";
 import AccountSelector from "@/components/composed/account-selector";
-import { AlertCircle } from "lucide-react";
+// import { AlertCircle } from "lucide-react";
 
 const ConnectModal = ({ open, onClose, darkMode }: { open: boolean; onClose: () => void; darkMode?: boolean }) => {
   const [state] = useContext(MetaMaskContext);
@@ -164,7 +164,7 @@ const ConnectModal = ({ open, onClose, darkMode }: { open: boolean; onClose: () 
                           <img src={"/wallet-connect.svg"} alt="Wallet Connect Logo" className="h-8 w-8" />
                           <span className="w-32">Wallet Connect</span>
                         </Button>
-                        <div className="my-2 flex w-full items-center justify-center">
+                        {/* <div className="my-2 flex w-full items-center justify-center">
                           <div className="flex-grow border-t border-gray-300"></div>
                           <span className="px-4 text-red-500">
                             <AlertCircle className="mr-2 inline-block" /> BE CAREFUL!
@@ -176,7 +176,7 @@ const ConnectModal = ({ open, onClose, darkMode }: { open: boolean; onClose: () 
                         </Button>
                         <Button variant="default" onClick={() => setSelectedMode("vault-file")}>
                           Vault File
-                        </Button>
+                        </Button> */}
                       </>
                     )}
                   </motion.div>
