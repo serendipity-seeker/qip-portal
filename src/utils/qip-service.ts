@@ -73,7 +73,7 @@ export const qipService = {
     const currentEpoch = await qipService.getCurrentEpoch();
 
     // Check start epoch
-    if (input.startEpoch <= currentEpoch) {
+    if (input.startEpoch <= currentEpoch + 1) {
       return {
         valid: false,
         returnCode: QIPLogInfo.QIP_invalidStartEpoch,

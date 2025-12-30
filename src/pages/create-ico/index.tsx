@@ -85,7 +85,7 @@ export default function CreateICOPage() {
       try {
         const epoch = await qipService.getCurrentEpoch();
         setCurrentEpoch(epoch);
-        setFormData((prev) => ({ ...prev, startEpoch: epoch + 1 }));
+        setFormData((prev) => ({ ...prev, startEpoch: epoch + 2 }));
       } catch (error) {
         console.error("Failed to load epoch:", error);
       } finally {
@@ -171,8 +171,8 @@ export default function CreateICOPage() {
     }
 
     // Validation
-    if (formData.startEpoch <= currentEpoch) {
-      toast.error("Start epoch must be at least 1 epochs in the future");
+    if (formData.startEpoch <= currentEpoch + 1) {
+      toast.error("Start epoch must be at least 2 epochs in the future");
       return;
     }
 
@@ -296,10 +296,10 @@ export default function CreateICOPage() {
               <label className="text-foreground mb-2 block text-sm font-medium">Start Epoch</label>
               <Input
                 type="number"
-                placeholder={`Minimum: ${currentEpoch + 1}`}
+                placeholder={`Minimum: ${currentEpoch + 2}`}
                 value={formData.startEpoch}
                 onChange={(e) => setFormData({ ...formData, startEpoch: Number.parseInt(e.target.value) })}
-                min={currentEpoch + 1}
+                min={currentEpoch + 2}
                 required
                 disabled={creating}
               />
