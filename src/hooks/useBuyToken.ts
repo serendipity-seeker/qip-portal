@@ -22,8 +22,10 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
   const { startMonitoring } = useTxMonitor();
   const [isLoading, setIsLoading] = useState(false);
   
-  // Track token balance before purchase to verify tokens received
-  const tokenBalanceBeforeRef = useRef<number>(0);
+  // Track token balances before purchase to verify tokens received
+  // We need to check both QX and QIP since tokens might go to either
+  const qxBalanceBeforeRef = useRef<number>(0);
+  const qipBalanceBeforeRef = useRef<number>(0);
 
   const buyToken = useCallback(
     async (indexOfICO: number, amount: number): Promise<BuyTokenResult> => {
@@ -60,12 +62,13 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
         const targetTick = tickInfo.tick + settings.tickOffset;
         const { totalCost } = validation;
 
-        // Store current token balance before transaction
-        tokenBalanceBeforeRef.current = await fetchAssetsBalance(
-          wallet.publicKey,
-          icoInfo.assetName,
-          QX_SC_INDEX
-        );
+        // Store current token balances before transaction (both contracts)
+        const [qxBefore, qipBefore] = await Promise.all([
+          fetchAssetsBalance(wallet.publicKey, icoInfo.assetName, QX_SC_INDEX),
+          fetchAssetsBalance(wallet.publicKey, icoInfo.assetName, QIP_SC_INDEX),
+        ]);
+        qxBalanceBeforeRef.current = qxBefore;
+        qipBalanceBeforeRef.current = qipBefore;
 
         // Create the transaction
         const tx = await buyTokenTx(wallet.publicKey, indexOfICO, amount, totalCost, targetTick);
@@ -83,18 +86,21 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
         const taskId = `buy-token-${Date.now()}`;
 
         // Checker: verify token balance increased after purchase
-        // Tokens go to QX contract (index 1) after purchase
+        // Check BOTH QX and QIP contracts since tokens might go to either
         const checker = async () => {
           if (!wallet) return false;
           
-          const currentBalance = await fetchAssetsBalance(
-            wallet.publicKey,
-            icoInfo.assetName,
-            QIP_SC_INDEX
-          );
+          const [currentQxBalance, currentQipBalance] = await Promise.all([
+            fetchAssetsBalance(wallet.publicKey, icoInfo.assetName, QX_SC_INDEX),
+            fetchAssetsBalance(wallet.publicKey, icoInfo.assetName, QIP_SC_INDEX),
+          ]);
           
-          // Check if balance increased by the expected amount
-          return currentBalance >= tokenBalanceBeforeRef.current + amount;
+          // Calculate total balance increase across both contracts
+          const totalBefore = qxBalanceBeforeRef.current + qipBalanceBeforeRef.current;
+          const totalAfter = currentQxBalance + currentQipBalance;
+          
+          // Check if total balance increased by at least the expected amount
+          return totalAfter >= totalBefore + amount;
         };
 
         const onSuccess = async () => {
