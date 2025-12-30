@@ -100,13 +100,13 @@ export function PhaseTimeline({
                   </div>
 
                   <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total:</span>
-                      <span className="text-foreground font-medium">{formatNumber(phase.amount)}</span>
+                    <div className="flex flex-wrap gap-x-1">
+                      <span className="text-muted-foreground whitespace-nowrap">Total:</span>
+                      <span className="text-foreground font-medium break-all">{formatNumber(phase.amount)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Remaining:</span>
-                      <span className="text-foreground font-medium">{formatNumber(phase.remaining)}</span>
+                    <div className="flex flex-wrap gap-x-1">
+                      <span className="text-muted-foreground whitespace-nowrap">Remaining:</span>
+                      <span className="text-foreground font-medium break-all">{formatNumber(phase.remaining)}</span>
                     </div>
                   </div>
 
