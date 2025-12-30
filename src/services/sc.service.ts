@@ -267,7 +267,7 @@ export const buyTokenTx = async (
   tick: number,
 ) => {
   const payload = createPayload([
-    { data: indexOfICO, type: "uint32" },
+    { data: indexOfICO, type: "bigint64" },
     { data: amount, type: "bigint64" },
   ]);
 
