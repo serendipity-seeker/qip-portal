@@ -34,7 +34,7 @@ export enum QIPLogInfo {
 // Log info to human-readable message mapping
 export const QIP_LOG_MESSAGES: Record<QIPLogInfo, string> = {
   [QIPLogInfo.QIP_success]: "Transaction successful",
-  [QIPLogInfo.QIP_invalidStartEpoch]: "Invalid start epoch - must be at least 2 epochs in the future",
+  [QIPLogInfo.QIP_invalidStartEpoch]: "Invalid start epoch - must be at least 1 epochs in the future",
   [QIPLogInfo.QIP_invalidSaleAmount]: "Invalid sale amount - must match total tokens transferred to contract",
   [QIPLogInfo.QIP_invalidPrice]: "Invalid price - all prices must be greater than zero",
   [QIPLogInfo.QIP_invalidPercent]: "Invalid percent - percentages must sum to 95",
