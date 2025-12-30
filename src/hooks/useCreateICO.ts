@@ -1,9 +1,9 @@
 import { toast } from "sonner";
 import { useAtom } from "jotai";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import { broadcastTx, fetchTickInfo } from "@/services/rpc.service";
-import { createICOTx } from "@/services/sc.service";
+import { createICOTx, getAllICOs } from "@/services/sc.service";
 import { settingsAtom } from "@/store/settings";
 import { useTxMonitor } from "@/store/txMonitor";
 import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
@@ -24,6 +24,9 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
   const { handleTransferShareRights, checkTransferShareRights } = useTransferShareManagementRights();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"idle" | "transferring" | "creating">("idle");
+  
+  // Track ICO count before creation to verify new ICO was added
+  const icoCountBeforeRef = useRef<number>(0);
 
   /**
    * Submit the create ICO transaction and start monitoring
@@ -35,6 +38,10 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
     setStep("creating");
     const tickInfo = await fetchTickInfo();
     const targetTick = tickInfo.tick + settings.tickOffset;
+
+    // Store current ICO count before transaction
+    const currentICOs = await getAllICOs();
+    icoCountBeforeRef.current = currentICOs.length;
 
     const tx = await createICOTx(
       wallet.publicKey,
@@ -84,6 +91,26 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
 
     const taskId = `create-ico-${wallet.publicKey}-${targetTick}-${Date.now()}`;
 
+    // Checker: verify ICO was created by checking if a new ICO exists with matching asset/issuer/creator
+    const checker = async () => {
+      if (!wallet) return false;
+      
+      const icos = await getAllICOs();
+      
+      // Check if ICO count increased AND a new ICO matches our criteria
+      if (icos.length > icoCountBeforeRef.current) {
+        const newICO = icos.find(
+          (ico) =>
+            ico.assetName === input.assetName &&
+            ico.issuer === input.issuer &&
+            ico.creatorOfICO === wallet.publicKey
+        );
+        return !!newICO;
+      }
+      
+      return false;
+    };
+
     const onSuccess = async () => {
       const successResult: CreateICOResult = {
         success: true,
@@ -104,17 +131,17 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
       setIsLoading(false);
     };
 
-    // Use v3 strategy for QIP contract operations (provides error messages via logs)
+    // Use v1 strategy with checker function
     startMonitoring(
       taskId,
       {
-        checker: async () => false, // v3 uses logs, not checker
+        checker,
         onSuccess,
         onFailure,
         targetTick,
         txHash: txId,
       },
-      "v3",
+      "v1",
     );
   };
 
@@ -161,7 +188,6 @@ const useCreateICO = (options?: UseCreateICOOptions) => {
           assetName: input.assetName,
           amount: totalTokens,
           contractIndex: QIP_SC_INDEX,
-          isFromQX: true,
           // Fallback: called after transfer succeeds, chains to create ICO
           fallback: async () => {
             await submitCreateICO(input);

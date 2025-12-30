@@ -1,13 +1,14 @@
 import { toast } from "sonner";
 import { useAtom } from "jotai";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
-import { broadcastTx, fetchTickInfo } from "@/services/rpc.service";
-import { buyTokenTx } from "@/services/sc.service";
+import { broadcastTx, fetchAssetsBalance, fetchTickInfo } from "@/services/rpc.service";
+import { buyTokenTx, getICOInfo } from "@/services/sc.service";
 import { settingsAtom } from "@/store/settings";
 import { useTxMonitor } from "@/store/txMonitor";
 import { useQubicConnect } from "@/components/composed/wallet-connect/QubicConnectContext";
 import { qipService } from "@/utils/qip-service";
+import { QIP_SC_INDEX, QX_SC_INDEX } from "@/utils/constants";
 import type { BuyTokenResult } from "@/types";
 
 interface UseBuyTokenOptions {
@@ -20,6 +21,9 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
   const { wallet, getSignedTx } = useQubicConnect();
   const { startMonitoring } = useTxMonitor();
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Track token balance before purchase to verify tokens received
+  const tokenBalanceBeforeRef = useRef<number>(0);
 
   const buyToken = useCallback(
     async (indexOfICO: number, amount: number): Promise<BuyTokenResult> => {
@@ -42,9 +46,26 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
           return { success: false, returnCode: validation.returnCode, message: validation.message };
         }
 
+        // Get ICO info to know the asset name for balance checking
+        const icoInfo = await getICOInfo(indexOfICO);
+        if (!icoInfo) {
+          const message = "Failed to get ICO information";
+          toast.error(message);
+          options?.onError?.(message);
+          setIsLoading(false);
+          return { success: false, returnCode: -1, message };
+        }
+
         const tickInfo = await fetchTickInfo();
         const targetTick = tickInfo.tick + settings.tickOffset;
         const { totalCost } = validation;
+
+        // Store current token balance before transaction
+        tokenBalanceBeforeRef.current = await fetchAssetsBalance(
+          wallet.publicKey,
+          icoInfo.assetName,
+          QX_SC_INDEX
+        );
 
         // Create the transaction
         const tx = await buyTokenTx(wallet.publicKey, indexOfICO, amount, totalCost, targetTick);
@@ -58,14 +79,29 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
 
         toast.info(`Transaction broadcast: ${txId.slice(0, 8)}...`);
 
-        // Set up monitoring with v3 strategy for QIP contract logs
+        // Set up monitoring with v1 strategy using checker function
         const taskId = `buy-token-${Date.now()}`;
+
+        // Checker: verify token balance increased after purchase
+        // Tokens go to QX contract (index 1) after purchase
+        const checker = async () => {
+          if (!wallet) return false;
+          
+          const currentBalance = await fetchAssetsBalance(
+            wallet.publicKey,
+            icoInfo.assetName,
+            QIP_SC_INDEX
+          );
+          
+          // Check if balance increased by the expected amount
+          return currentBalance >= tokenBalanceBeforeRef.current + amount;
+        };
 
         const onSuccess = async () => {
           const successResult: BuyTokenResult = {
             success: true,
             returnCode: 0,
-            message: `Successfully purchased ${amount} tokens for ${totalCost} QUBIC`,
+            message: `Successfully purchased ${amount} ${icoInfo.assetName} tokens for ${totalCost} QUBIC`,
             txId,
           };
           toast.success(successResult.message);
@@ -74,22 +110,23 @@ const useBuyToken = (options?: UseBuyTokenOptions) => {
         };
 
         const onFailure = async () => {
-          const message = "Transaction failed";
+          const message = "Token purchase failed";
+          toast.error(message);
           options?.onError?.(message);
           setIsLoading(false);
         };
 
-        // Use v3 strategy for QIP contract operations (provides better error messages via logs)
+        // Use v1 strategy with checker function
         startMonitoring(
           taskId,
           {
-            checker: async () => false, // v3 doesn't use checker
+            checker,
             onSuccess,
             onFailure,
             targetTick,
             txHash: txId,
           },
-          "v3",
+          "v1",
         );
 
         return {

@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useAtom } from "jotai";
-import { assetNameConvert, QIP_SC_INDEX, QX_SC_INDEX } from "@/utils";
+import { assetNameConvert, QX_SC_INDEX } from "@/utils";
 import { broadcastTx, fetchAssetsBalance, fetchTickInfo } from "@/services/rpc.service";
 import { settingsAtom } from "@/store/settings";
 import { transferShareManagementRights, transferShareManagementRightsFromQIP } from "@/services/sc.service";

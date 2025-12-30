@@ -1,6 +1,6 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { TrendingUp, Users, DollarSign, Package } from "lucide-react";
+import { TrendingUp, DollarSign, Package } from "lucide-react";
 import { qipService } from "@/utils/qip-service";
 
 interface StatItem {
@@ -20,11 +20,6 @@ export function StatsBar() {
     {
       icon: <DollarSign className="h-5 w-5" />,
       label: "Total Supply",
-      value: "-",
-    },
-    {
-      icon: <Users className="h-5 w-5" />,
-      label: "Total Sold",
       value: "-",
     },
     {
@@ -57,11 +52,6 @@ export function StatsBar() {
               value: "0",
             },
             {
-              icon: <Users className="h-5 w-5" />,
-              label: "Total Sold",
-              value: "0",
-            },
-            {
               icon: <TrendingUp className="h-5 w-5" />,
               label: "Avg. Progress",
               value: "0%",
@@ -77,8 +67,6 @@ export function StatsBar() {
           (sum, ico) => sum + ico.saleAmountForPhase1 + ico.saleAmountForPhase2 + ico.saleAmountForPhase3,
           0,
         );
-
-        const totalSold = icos.reduce((sum, ico) => sum + qipService.getTotalSold(ico), 0);
 
         const avgProgress = icos.length > 0
           ? Math.round(icos.reduce((sum, ico) => sum + qipService.getProgress(ico), 0) / icos.length)
@@ -104,12 +92,6 @@ export function StatsBar() {
             trend: `${icos.length} total ICOs`,
           },
           {
-            icon: <Users className="h-5 w-5" />,
-            label: "Total Sold",
-            value: formatNumber(totalSold),
-            trend: totalSupply > 0 ? `${Math.round((totalSold / totalSupply) * 100)}% of supply` : undefined,
-          },
-          {
             icon: <TrendingUp className="h-5 w-5" />,
             label: "Avg. Progress",
             value: `${avgProgress}%`,
@@ -127,7 +109,7 @@ export function StatsBar() {
   }, []);
 
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {stats.map((stat, index) => (
         <div
           key={index}
