@@ -184,7 +184,7 @@ export function WalletConnectProvider({ children }: WalletConnectProviderProps) 
       metadata: {
         name: "QIP Portal",
         description: "QIP Portal",
-        url: "https://www.qip-portal.com",
+        url: "https://qubicico.com",
         icons: ["https://walletconnect.com/walletconnect-logo.png"],
       },
     }).then((client) => {
