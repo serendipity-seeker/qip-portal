@@ -15,7 +15,7 @@ const ConnectLink: React.FC<{ darkMode?: boolean }> = ({ darkMode }) => {
         <Button
           variant="default"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full"
           onClick={() => toggleConnectModal()}
           type="button"
         >

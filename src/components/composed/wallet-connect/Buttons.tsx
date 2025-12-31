@@ -47,6 +47,11 @@ export const HeaderButtons = ({ state, onConnectClick }: { state: MetamaskState;
     return <ReconnectButton onClick={onConnectClick} />;
   }
 
+  const wallet = localStorage.getItem("wallet");
+  if (!wallet) {
+    return <ConnectButton onClick={onConnectClick} isFlask={state.isFlask} />;
+  }
+
   return (
     <Button disabled>
       <MetaMaskLogo /> Connected

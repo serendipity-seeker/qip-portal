@@ -72,12 +72,12 @@ const WalletDropdown: React.FC<WalletDropdownProps> = ({ wallet, onDisconnect })
       <Button
         variant="default"
         size="sm"
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 w-full"
         onClick={() => setIsOpen(!isOpen)}
         type="button"
       >
         <MdLock size={20} />
-        <span className="hidden sm:inline">Connected</span>
+        <span>Connected</span>
         {hasQIPAssets && (
           <span className="bg-warning text-warning-foreground ml-1 rounded-full px-1.5 py-0.5 text-xs font-bold">
             !
