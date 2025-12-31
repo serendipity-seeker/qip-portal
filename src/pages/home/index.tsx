@@ -62,7 +62,7 @@ const HomePage: React.FC = () => {
               <span>Secure, Transparent, On-Chain</span>
             </div>
 
-            <h1 className="text-foreground mb-6 text-6xl leading-tight font-bold text-balance uppercase lg:text-7xl">
+            <h1 className="text-foreground mb-6 text-5xl leading-tight font-bold text-balance uppercase lg:text-7xl">
               Transparent Token Sales on{" "}
               <span className="from-primary to-primary/60 bg-gradient-to-r bg-clip-text text-transparent">Qubic</span>
             </h1>
@@ -131,7 +131,7 @@ const HomePage: React.FC = () => {
                 key={tab.value}
                 onClick={() => setFilter(tab.value as typeof filter)}
                 className={cn(
-                  "rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200",
+                  "rounded-lg px-3 py-2 sm:px-5 sm:py-2.5 text-sm font-semibold transition-all duration-200",
                   filter === tab.value
                     ? "bg-primary text-primary-foreground shadow-primary/25 shadow-lg"
                     : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted border-border hover:border-primary/30 border",

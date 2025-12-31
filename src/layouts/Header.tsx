@@ -62,7 +62,7 @@ const Header: React.FC = () => {
             </Button> */}
 
             {/* Wallet Button */}
-            <div className="hidden lg:block">
+            <div className="hidden md:block">
               <ConnectLink darkMode={true} />
             </div>
             {/* Mobile menu button */}
